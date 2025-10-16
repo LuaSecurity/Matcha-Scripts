@@ -1,0 +1,14 @@
+--[=[
+                                               _____ _____ 
+     /\                              / ____/ ____|
+    /  \   _ __ ___ __ _ _ __   ___  | (___| (___ 
+   / /\ \ | '__/ __/ _` | '_ \ / _ \  \___ \\___ \ 
+  / ____ \| | | (_| (_| | | | |  __/  ____) |___) |
+ /_/    \_\|_|  \_____,_|_| |_|\___| |_____/_____/ 
+                                                  
+                                                  
+This file was obfuscated by Arcane Obfuscator .gg/veezkcJ2yt
+ID: 28291950-c5ab-4654-a64c-7d96c0a2218c
+]=]
+
+local Arcane_aAaaAAaaaAaaaAAaaaaAaAAAA=game:GetService(((function(s)local Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA={};for a in s:gmatch("([^/]+)")do Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA[#Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA+1]=string.char(tonumber(a))end return table.concat(Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA)end)("80/108/97/121/101/114/115")))while true do for _,player in ipairs(Arcane_aAaaAAaaaAaaaAAaaaaAaAAAA:GetChildren())do if player:IsA(((function(s)local Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA={};for a in s:gmatch("([^/]+)")do Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA[#Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA+1]=string.char(tonumber(a))end return table.concat(Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA)end)("80/108/97/121/101/114")))and player ~=Arcane_aAaaAAaaaAaaaAAaaaaAaAAAA.LocalPlayer then local Arcane_aaaAaAAAaaaAAaAAaAAaAAAaa=player.Character and player.Character:FindFirstChild(((function(s)local Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA={};for a in s:gmatch("([^/]+)")do Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA[#Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA+1]=string.char(tonumber(a))end return table.concat(Arcane_AAaAaAAAAAaaaaaAaAaaaaAAA)end)("72/101/97/100")))if Arcane_aaaAaAAAaaaAAaAAaAAaAAAaa and Arcane_aaaAaAAAaaaAAaAAaAAaAAAaa.Size ~=Vector3.new(7,7,7)then Arcane_aaaAaAAAaaaAAaAAaAAaAAAaa.Size=Vector3.new(7,7,7)end end end wait(0.5)end
