@@ -1,0 +1,257 @@
+local ArcaneUiLib = {}
+
+local function create_drawing_element(type, config)
+    local element = Drawing.new(type)
+    
+    element.Filled = config.Filled or false
+    element.Color = config.Color or Color3.fromRGB(255, 255, 255)
+    element.Position = config.Position or Vector2.new(0, 0)
+    element.Size = config.Size or Vector2.new(100, 100)
+    element.Visible = config.Visible or true
+    
+    if type == "Text" then
+        element.Text = config.Text or ""
+        element.Font = config.Font or 0 
+        element.TextSize = config.TextSize or 14 
+    end
+    
+    return element
+end
+
+local Element = {}
+Element.__index = Element
+
+function Element:New(type, config)
+    local self = setmetatable({}, Element)
+    self.drawing_object = create_drawing_element(type, config)
+    return self
+end
+
+function Element:SetPosition(x, y)
+    if self.drawing_object then
+        self.drawing_object.Position = Vector2.new(x, y)
+    end
+end
+
+function Element:SetVisible(visible)
+    if self.drawing_object then
+        self.drawing_object.Visible = visible
+    end
+end
+
+function Element:Remove()
+    if self.drawing_object then
+        self.drawing_object:Remove()
+    end
+end
+
+local Tab = {}
+Tab.__index = Tab
+
+function Tab:New(parentWindow, name)
+    local self = setmetatable({}, Tab)
+    self.parent = parentWindow
+    self.name = name
+    self.elements = {} 
+    self.isVisible = false
+    
+    local x = self.parent.x + self.parent.tabAreaX
+    local y = self.parent.y + self.parent.tabAreaY
+    local w = self.parent.tabAreaWidth
+    local h = self.parent.tabAreaHeight
+    
+    self.frame = Element:New("Square", {
+        Position = Vector2.new(x, y),
+        Size = Vector2.new(w, h),
+        Color = Color3.fromRGB(40, 40, 40),
+        Filled = true,
+        Visible = false
+    })
+    
+    self.base_position = Vector2.new(x + 10, y + 10) 
+    self.next_element_y = 0
+    
+    self:AddElement(self.frame)
+    return self
+end
+
+function Tab:AddElement(element)
+    if element.drawing_object then
+        table.insert(self.elements, element)
+    end
+end
+
+function Tab:AddText(label, color)
+    local x = self.base_position.X
+    local y = self.base_position.Y + self.next_element_y
+    local height = 18
+    
+    local text = Element:New("Text", {
+        Position = Vector2.new(x, y),
+        Text = label,
+        TextSize = 14,
+        Color = color or Color3.fromRGB(200, 200, 200),
+        Visible = self.isVisible
+    })
+    
+    self:AddElement(text)
+    self.next_element_y = self.next_element_y + height + 5
+    return text
+end
+
+function Tab:AddButton(label, w, h, color)
+    local x = self.base_position.X
+    local y = self.base_position.Y + self.next_element_y
+    local height = h or 20
+    
+    local square = Element:New("Square", {
+        Position = Vector2.new(x, y),
+        Size = Vector2.new(w or 150, height),
+        Color = color or Color3.fromRGB(50, 100, 250),
+        Filled = true,
+        Visible = self.isVisible
+    })
+    
+    local text = Element:New("Text", {
+        Position = Vector2.new(x + 5, y + 3),
+        Text = label,
+        TextSize = 14,
+        Color = Color3.fromRGB(255, 255, 255),
+        Visible = self.isVisible
+    })
+    
+    self:AddElement(square)
+    self:AddElement(text)
+    self.next_element_y = self.next_element_y + height + 5
+    return square, text
+end
+
+function Tab:SetVisible(visible)
+    self.isVisible = visible
+    for _, element in ipairs(self.elements) do
+        element:SetVisible(visible)
+    end
+end
+
+function Tab:Remove()
+    for _, element in ipairs(self.elements) do
+        element:Remove()
+    end
+end
+
+local Window = {}
+Window.__index = Window
+
+function ArcaneUiLib:NewWindow(title, x, y, width, height)
+    local self = setmetatable({}, Window)
+    
+    self.x = x or 50
+    self.y = y or 50
+    self.width = width or 400
+    self.height = height or 300
+    
+    self.tabs = {} 
+    self.tabButtons = {}
+    self.activeTab = nil
+    self.elements = {} 
+    
+    self.tabButtonWidth = 80
+    self.tabButtonHeight = 25
+    self.tabAreaX = self.tabButtonWidth + 10
+    self.tabAreaY = 30
+    self.tabAreaWidth = self.width - self.tabAreaX - 10
+    self.tabAreaHeight = self.height - self.tabAreaY - 10
+    
+    self.background = Element:New("Square", {
+        Position = Vector2.new(self.x, self.y),
+        Size = Vector2.new(self.width, self.height),
+        Color = Color3.fromRGB(20, 20, 20),
+        Filled = true
+    })
+    table.insert(self.elements, self.background)
+
+    self.title_bar = Element:New("Square", {
+        Position = Vector2.new(self.x, self.y),
+        Size = Vector2.new(self.width, 25),
+        Color = Color3.fromRGB(50, 50, 50),
+        Filled = true
+    })
+    table.insert(self.elements, self.title_bar)
+
+    self.title_text = Element:New("Text", {
+        Position = Vector2.new(self.x + 5, self.y + 4),
+        Text = title or "Arcane Ui lib",
+        TextSize = 16,
+        Color = Color3.fromRGB(220, 220, 220)
+    })
+    table.insert(self.elements, self.title_text)
+
+    self.tab_bar = Element:New("Square", {
+        Position = Vector2.new(self.x + 5, self.y + 30),
+        Size = Vector2.new(self.tabButtonWidth, self.height - 35),
+        Color = Color3.fromRGB(30, 30, 30),
+        Filled = true
+    })
+    table.insert(self.elements, self.tab_bar)
+    
+    return self
+end
+
+function Window:SetActiveTab(tabName)
+    if self.activeTab and self.tabs[self.activeTab] then
+        self.tabs[self.activeTab]:SetVisible(false)
+    end
+    
+    if self.tabs[tabName] then
+        self.tabs[tabName]:SetVisible(true)
+        self.activeTab = tabName
+    end
+end
+
+function Window:NewTab(name)
+    local newTab = Tab:New(self, name)
+    self.tabs[name] = newTab
+
+    local buttonIndex = #self.tabButtons + 1
+    local tabButtonY = self.y + 30 + (buttonIndex - 1) * (self.tabButtonHeight + 5)
+    
+    local tabButton = Element:New("Square", {
+        Position = Vector2.new(self.x + 5, tabButtonY),
+        Size = Vector2.new(self.tabButtonWidth, self.tabButtonHeight),
+        Color = Color3.fromRGB(80, 80, 80),
+        Filled = true
+    })
+    table.insert(self.elements, tabButton)
+    
+    local buttonText = Element:New("Text", {
+        Position = Vector2.new(self.x + 8, tabButtonY + 4),
+        Text = name,
+        TextSize = 14,
+        Color = Color3.fromRGB(255, 255, 255)
+    })
+    table.insert(self.elements, buttonText)
+    
+    table.insert(self.tabButtons, {button = tabButton, text = buttonText, name = name})
+
+    if #self.tabButtons == 1 then
+        self:SetActiveTab(name)
+    end
+    
+    return newTab
+end
+
+function Window:SetPosition(new_x, new_y)
+
+end
+
+function Window:Remove()
+    for _, element in ipairs(self.elements) do
+        element:Remove()
+    end
+
+    for _, tab in pairs(self.tabs) do
+        tab:Remove()
+    end
+end
+
+return ArcaneUiLib
