@@ -1,112 +1,112 @@
-if _G.EspLibrary and _G.EspLibrary.Tracking then
-    for _, info in pairs(_G.EspLibrary.Tracking) do
-        if info.Text then info.Text:Remove() end
-        if info.Box then info.Box:Remove() end
-    end
+local Library = {}
+Library.__index = Library
+
+function Library:New()
+    local self = setmetatable({}, Library)
+    self.Config = {
+        Color = Color3.fromRGB(255, 80, 80),
+        Box = true,
+        Name = true,
+        RefreshRate = 0.3
+    }
+    self._espObjects = {}
+    self._running = false
+    return self
 end
 
-_G.EspLibrary = _G.EspLibrary or {}
-local EspLibrary = _G.EspLibrary
+local camera = workspace.CurrentCamera
+local run = game:GetService("RunService")
 
-EspLibrary.Config = EspLibrary.Config or {
-    PlayerESP = true,
-    NPCESP = true,
-    CustomESP = {},
-    Box = true,
-    Name = true
-}
-
-EspLibrary.Tracking = EspLibrary.Tracking or {}
-local Tracking = EspLibrary.Tracking
-
-local Workspace = workspace
-
-local function WorldToScreen(pos)
-    local cam = Workspace.CurrentCamera
-    if cam and cam.WorldToViewportPoint then
-        local screenPos, onScreen = cam:WorldToViewportPoint(pos)
-        return Vector2.new(screenPos.X, screenPos.Y), onScreen
-    else
-        return Vector2.new(pos.X, pos.Z), true
-    end
+local function toScreen(pos)
+    local s, vis = camera:WorldToViewportPoint(pos)
+    return Vector2.new(s.X, s.Y), vis
 end
 
-local function ScanWorkspace()
-    local valid = {}
-    for _, inst in ipairs(Workspace:GetDescendants()) do
-        for name, cfg in pairs(EspLibrary.Config.CustomESP) do
-            if inst.Name == name or inst.ClassName == name then
-                if inst:IsA("BasePart") or (inst:IsA("Model") and inst.PrimaryPart) then
-                    local root = inst:IsA("BasePart") and inst or inst.PrimaryPart
-                    local addr = tostring(root)
-                    valid[addr] = true
-                    if not Tracking[addr] then
-                        local text = Drawing.new("Text")
-                        text.Text = cfg.Text or name
-                        text.Center = true
-                        text.Outline = true
-                        text.Color = cfg.Color or Color3.new(1,1,1)
-                        text.Visible = false
-
-                        local box = Drawing.new("Square")
-                        box.Thickness = 1
-                        box.Filled = false
-                        box.Color = cfg.Color or Color3.new(1,1,1)
-                        box.Visible = false
-
-                        Tracking[addr] = {Root = root, Box = box, Text = text, Config = cfg}
-                    end
-                end
-            end
-        end
+function Library:_clear()
+    for _, esp in pairs(self._espObjects) do
+        if esp.Text then esp.Text:Remove() end
+        if esp.Box then esp.Box:Remove() end
     end
-
-    for addr, info in pairs(Tracking) do
-        if not valid[addr] then
-            if info.Box then info.Box:Remove() end
-            if info.Text then info.Text:Remove() end
-            Tracking[addr] = nil
-        end
-    end
+    table.clear(self._espObjects)
 end
 
-local function UpdateESP()
-    for _, info in pairs(Tracking) do
-        local root, box, text, cfg = info.Root, info.Box, info.Text, info.Config
-        if root and root.Position then
-            local headPos, onScreen1 = WorldToScreen(root.Position + Vector3.new(0,2,0))
-            local legPos, onScreen2 = WorldToScreen(root.Position - Vector3.new(0,2,0))
-            if onScreen1 and onScreen2 then
-                local h = math.abs(headPos.Y - legPos.Y)
-                local w = h / 1.5
-                local x, y = headPos.X - w/2, headPos.Y
-                if box then
-                    box.Position = Vector2.new(x,y)
-                    box.Size = Vector2.new(w,h)
-                    box.Visible = cfg.Box ~= false and EspLibrary.Config.Box
-                    box.Color = cfg.Color or box.Color
-                end
-                if text then
-                    text.Position = Vector2.new(headPos.X, y - 16)
-                    text.Visible = cfg.Name ~= false and EspLibrary.Config.Name
-                    text.Color = cfg.Color or text.Color
-                    text.Text = cfg.Text or text.Text
-                end
+function Library:_makeESP(part, label)
+    local box = Drawing.new("Square")
+    box.Thickness = 1
+    box.Filled = false
+    box.Color = self.Config.Color
+    box.Visible = false
+
+    local text = Drawing.new("Text")
+    text.Center = true
+    text.Outline = true
+    text.Color = self.Config.Color
+    text.Size = 16
+    text.Text = label
+    text.Visible = false
+
+    self._espObjects[part] = {Box = box, Text = text, Part = part}
+end
+
+function Library:_update()
+    for part, esp in pairs(self._espObjects) do
+        if part and part.Parent then
+            local pos, vis = toScreen(part.Position)
+            if vis then
+                local dist = (camera.CFrame.Position - part.Position).Magnitude
+                local size = math.clamp(2000 / dist, 10, 100)
+                esp.Box.Size = Vector2.new(size, size)
+                esp.Box.Position = pos - esp.Box.Size / 2
+                esp.Box.Color = self.Config.Color
+                esp.Box.Visible = self.Config.Box
+
+                esp.Text.Position = Vector2.new(pos.X, pos.Y - size / 1.5)
+                esp.Text.Color = self.Config.Color
+                esp.Text.Visible = self.Config.Name
             else
-                if box then box.Visible = false end
-                if text then text.Visible = false end
+                esp.Box.Visible = false
+                esp.Text.Visible = false
             end
         else
-            if box then box.Visible = false end
-            if text then text.Visible = false end
+            if esp.Box then esp.Box:Remove() end
+            if esp.Text then esp.Text:Remove() end
+            self._espObjects[part] = nil
         end
     end
 end
 
-spawn(function()
-    while true do
-        ScanWorkspace()
-        UpdateESP()
-        task.wait(0.1)
+function Library:CreateESP(targetName)
+    self:_clear()
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name == targetName then
+            self:_makeESP(obj, obj.Name)
+        end
     end
-end)
+end
+
+function Library:Start()
+    if self._running then return end
+    self._running = true
+    run.RenderStepped:Connect(function()
+        self:_update()
+    end)
+    task.spawn(function()
+        while self._running do
+            for _, esp in pairs(self._espObjects) do
+                if not esp.Part or not esp.Part.Parent then
+                    if esp.Box then esp.Box:Remove() end
+                    if esp.Text then esp.Text:Remove() end
+                    self._espObjects[esp] = nil
+                end
+            end
+            task.wait(self.Config.RefreshRate)
+        end
+    end)
+end
+
+function Library:Stop()
+    self._running = false
+    self:_clear()
+end
+
+return Library:New()
