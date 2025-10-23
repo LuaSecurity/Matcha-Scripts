@@ -1,4 +1,10 @@
--- Create global table if not exists
+if _G.EspLibrary and _G.EspLibrary.Tracking then
+    for _, info in pairs(_G.EspLibrary.Tracking) do
+        if info.Text then info.Text:Remove() end
+        if info.Box then info.Box:Remove() end
+    end
+end
+
 _G.EspLibrary = _G.EspLibrary or {}
 local EspLibrary = _G.EspLibrary
 
@@ -10,8 +16,8 @@ EspLibrary.Config = EspLibrary.Config or {
     Name = true
 }
 
-EspLibrary.Tracked = EspLibrary.Tracked or {}
-local Tracked = EspLibrary.Tracked
+EspLibrary.Tracking = EspLibrary.Tracking or {}
+local Tracking = EspLibrary.Tracking
 
 local Workspace = workspace
 
@@ -34,7 +40,7 @@ local function ScanWorkspace()
                     local root = inst:IsA("BasePart") and inst or inst.PrimaryPart
                     local addr = tostring(root)
                     valid[addr] = true
-                    if not Tracked[addr] then
+                    if not Tracking[addr] then
                         local text = Drawing.new("Text")
                         text.Text = cfg.Text or name
                         text.Center = true
@@ -48,24 +54,24 @@ local function ScanWorkspace()
                         box.Color = cfg.Color or Color3.new(1,1,1)
                         box.Visible = false
 
-                        Tracked[addr] = {Root = root, Box = box, Text = text, Config = cfg}
+                        Tracking[addr] = {Root = root, Box = box, Text = text, Config = cfg}
                     end
                 end
             end
         end
     end
 
-    for addr, info in pairs(Tracked) do
+    for addr, info in pairs(Tracking) do
         if not valid[addr] then
             if info.Box then info.Box:Remove() end
             if info.Text then info.Text:Remove() end
-            Tracked[addr] = nil
+            Tracking[addr] = nil
         end
     end
 end
 
 local function UpdateESP()
-    for _, info in pairs(Tracked) do
+    for _, info in pairs(Tracking) do
         local root, box, text, cfg = info.Root, info.Box, info.Text, info.Config
         if root and root.Position then
             local headPos, onScreen1 = WorldToScreen(root.Position + Vector3.new(0,2,0))
