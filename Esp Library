@@ -1,91 +1,125 @@
-_G.EspLibrary = {}
-local ESP = _G.EspLibrary
+if _G.EspLibrary then
+    for _, info in pairs(_G.EspLibrary.Tracked or {}) do
+        if info.Text then info.Text:Remove() end
+        if info.Box then info.Box:Remove() end
+    end
+end
 
-ESP.Config = {
+_G.EspLibrary = _G.EspLibrary or {}
+local EspLibrary = _G.EspLibrary
+
+EspLibrary.Config = EspLibrary.Config or {
     PlayerESP = true,
     NPCESP = true,
-    CustomESP = {}
+    CustomESP = {},
+    Box = true,
+    Name = true
 }
-ESP.DrawingObjects = {}
-ESP.LoopDelay = 0.1
+
+EspLibrary.Tracked = EspLibrary.Tracked or {}
+local Tracked = EspLibrary.Tracked
+
+local Workspace = workspace
 
 local function WorldToScreen(pos)
-    local cam = workspace:FindFirstChild("CurrentCamera")
+    local cam = Workspace.CurrentCamera
     if cam and cam.WorldToViewportPoint then
-        local screenPos, _ = cam:WorldToViewportPoint(pos)
-        return Vector2.new(screenPos.X, screenPos.Y)
+        local screenPos, onScreen = cam:WorldToViewportPoint(pos)
+        return Vector2.new(screenPos.X, screenPos.Y), onScreen
     else
-        return Vector2.new(pos.X, pos.Z)
+        return Vector2.new(pos.X, pos.Z), true
     end
 end
 
-function ESP:Clear()
-    for _, draw in pairs(self.DrawingObjects) do
-        if draw then draw:Remove() end
-    end
-    self.DrawingObjects = {}
-end
+local function ScanWorkspace()
+    local valid = {}
+    for _, inst in ipairs(Workspace:GetDescendants()) do
+        for name, cfg in pairs(EspLibrary.Config.CustomESP) do
+            if inst.Name == name or inst.ClassName == name then
+                if inst:IsA("BasePart") or (inst:IsA("Model") and inst.PrimaryPart) then
+                    local root = inst:IsA("BasePart") and inst or inst.PrimaryPart
+                    local addr = tostring(root:GetDebugId or root) -- unique id
+                    valid[addr] = true
+                    if not Tracked[addr] then
+                        local text = Drawing.new("Text")
+                        text.Text = cfg.Text or name
+                        text.Center = true
+                        text.Outline = true
+                        text.Color = cfg.Color or Color3.new(1,1,1)
+                        text.Visible = false
 
-function ESP:GetOrCreateDrawing(key, color, radius)
-    if not self.DrawingObjects[key] then
-        local draw = Drawing.new("Circle")
-        draw.Color = color or Color3.new(1,1,1)
-        draw.Visible = true
-        draw.Radius = radius or 8
-        self.DrawingObjects[key] = draw
-    end
-    return self.DrawingObjects[key]
-end
+                        local box = Drawing.new("Square")
+                        box.Thickness = 1
+                        box.Filled = false
+                        box.Color = cfg.Color or Color3.new(1,1,1)
+                        box.Visible = false
 
-function ESP:DrawPlayers()
-    for _, player in ipairs(game.Players:GetChildren()) do
-        if player == game.Players.LocalPlayer then continue end
-        local char = player.Character
-        if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
-        local pos = WorldToScreen(char.HumanoidRootPart.Position)
-        local draw = self:GetOrCreateDrawing(player.Name, Color3.new(0,1,0), 8)
-        draw.Position = pos
+                        Tracked[addr] = {
+                            Root = root,
+                            Box = box,
+                            Text = text,
+                            Config = cfg
+                        }
+                    end
+                end
+            end
+        end
     end
-end
 
-function ESP:DrawNPCs()
-    for _, npc in ipairs(workspace:GetChildren()) do
-        if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
-            local pos = WorldToScreen(npc.HumanoidRootPart.Position)
-            local draw = self:GetOrCreateDrawing(npc:GetFullName(), Color3.new(1,1,0), 8)
-            draw.Position = pos
+    for addr, info in pairs(Tracked) do
+        if not valid[addr] then
+            if info.Box then info.Box:Remove() end
+            if info.Text then info.Text:Remove() end
+            Tracked[addr] = nil
         end
     end
 end
 
-function ESP:DrawCustom()
-    for key, color in pairs(self.Config.CustomESP) do
-        for _, inst in ipairs(workspace:GetDescendants()) do
-            if inst.Name == key or inst.ClassName == key then
-                local pos
-                if inst:IsA("BasePart") then
-                    pos = WorldToScreen(inst.Position)
-                elseif inst:IsA("Model") and inst.PrimaryPart then
-                    pos = WorldToScreen(inst.PrimaryPart.Position)
+local function UpdateESP()
+    for _, info in pairs(Tracked) do
+        local root = info.Root
+        local box = info.Box
+        local text = info.Text
+        local cfg = info.Config
+
+        if root and root.Position then
+            local headPos, onScreen1 = WorldToScreen(root.Position + Vector3.new(0,2,0))
+            local legPos, onScreen2 = WorldToScreen(root.Position - Vector3.new(0,2,0))
+
+            if onScreen1 and onScreen2 then
+                local h = math.abs(headPos.Y - legPos.Y)
+                local w = h / 1.5
+                local x = headPos.X - w/2
+                local y = headPos.Y
+
+                if box then
+                    box.Position = Vector2.new(x,y)
+                    box.Size = Vector2.new(w,h)
+                    box.Visible = cfg.Box ~= false and EspLibrary.Config.Box
+                    box.Color = cfg.Color or box.Color
                 end
-                if pos then
-                    local draw = self:GetOrCreateDrawing(inst:GetFullName(), color, 8)
-                    draw.Position = pos
+
+                if text then
+                    text.Position = Vector2.new(headPos.X, y - 16)
+                    text.Visible = cfg.Name ~= false and EspLibrary.Config.Name
+                    text.Color = cfg.Color or text.Color
+                    text.Text = cfg.Text or text.Text
                 end
+            else
+                if box then box.Visible = false end
+                if text then text.Visible = false end
             end
+        else
+            if box then box.Visible = false end
+            if text then text.Visible = false end
         end
     end
 end
 
 spawn(function()
-    local lastLoopTime = os.clock()
     while true do
-        if os.clock() - lastLoopTime >= ESP.LoopDelay then
-            lastLoopTime = os.clock()
-            if ESP.Config.PlayerESP then ESP:DrawPlayers() end
-            if ESP.Config.NPCESP then ESP:DrawNPCs() end
-            ESP:DrawCustom()
-        end
-        task.wait()
+        ScanWorkspace()
+        UpdateESP()
+        task.wait(0.1)
     end
 end)
