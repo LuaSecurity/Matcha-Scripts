@@ -10,7 +10,9 @@ Example:
     tween:Play()
     while tween.IsPlaying do wait(0) end
 
-]] local TweenService = {}
+]] 
+
+local TweenService = {}
 
 local EasingFunctions = {
     Linear = function(t)
