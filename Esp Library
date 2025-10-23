@@ -7,18 +7,18 @@ function Library:New()
         Color = Color3.fromRGB(255, 80, 80),
         Box = true,
         Name = true,
-        RefreshRate = 0.3
+        RefreshRate = 0.2
     }
     self._espObjects = {}
     self._running = false
     return self
 end
 
-local camera = workspace.CurrentCamera
+local cam = workspace.CurrentCamera
 local run = game:GetService("RunService")
 
 local function toScreen(pos)
-    local s, vis = camera:WorldToViewportPoint(pos)
+    local s, vis = cam:WorldToViewportPoint(pos)
     return Vector2.new(s.X, s.Y), vis
 end
 
@@ -32,8 +32,8 @@ end
 
 function Library:_makeESP(part, label)
     local box = Drawing.new("Square")
-    box.Thickness = 1
     box.Filled = false
+    box.Thickness = 1
     box.Color = self.Config.Color
     box.Visible = false
 
@@ -45,7 +45,7 @@ function Library:_makeESP(part, label)
     text.Text = label
     text.Visible = false
 
-    self._espObjects[part] = {Box = box, Text = text, Part = part}
+    self._espObjects[part] = {Part = part, Box = box, Text = text}
 end
 
 function Library:_update()
@@ -53,14 +53,15 @@ function Library:_update()
         if part and part.Parent then
             local pos, vis = toScreen(part.Position)
             if vis then
-                local dist = (camera.CFrame.Position - part.Position).Magnitude
+                local dist = (cam.CFrame.Position - part.Position).Magnitude
                 local size = math.clamp(2000 / dist, 10, 100)
                 esp.Box.Size = Vector2.new(size, size)
                 esp.Box.Position = pos - esp.Box.Size / 2
-                esp.Box.Color = self.Config.Color
                 esp.Box.Visible = self.Config.Box
+                esp.Box.Color = self.Config.Color
 
                 esp.Text.Position = Vector2.new(pos.X, pos.Y - size / 1.5)
+                esp.Text.Text = part.Name
                 esp.Text.Color = self.Config.Color
                 esp.Text.Visible = self.Config.Name
             else
@@ -75,31 +76,39 @@ function Library:_update()
     end
 end
 
-function Library:CreateESP(targetName)
+function Library:CreateESP()
     self:_clear()
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Name == targetName then
-            self:_makeESP(obj, obj.Name)
+    rconsoleprint("@@YELLOW@@\n[ESP LIBRARY] Enter instance name, class, or path (comma-separated): ")
+    local input = rconsoleinput()
+    if not input or input == "" then
+        rconsoleprint("@@RED@@\n[ESP LIBRARY] Invalid input.\n")
+        return
+    end
+
+    local targets = {}
+    for name in input:gmatch("[^,]+") do
+        table.insert(targets, name:match("^%s*(.-)%s*$"))
+    end
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        for _, target in ipairs(targets) do
+            if obj.Name == target or obj.ClassName == target or obj:GetFullName():find(target) then
+                if obj:IsA("BasePart") then
+                    self:_makeESP(obj, obj.Name)
+                end
+            end
         end
     end
+
+    rconsoleprint("@@GREEN@@[ESP LIBRARY] Tracking " .. tostring(#self._espObjects) .. " objects.\n")
 end
 
 function Library:Start()
     if self._running then return end
     self._running = true
     run.RenderStepped:Connect(function()
-        self:_update()
-    end)
-    task.spawn(function()
-        while self._running do
-            for _, esp in pairs(self._espObjects) do
-                if not esp.Part or not esp.Part.Parent then
-                    if esp.Box then esp.Box:Remove() end
-                    if esp.Text then esp.Text:Remove() end
-                    self._espObjects[esp] = nil
-                end
-            end
-            task.wait(self.Config.RefreshRate)
+        if self._running then
+            self:_update()
         end
     end)
 end
