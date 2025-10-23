@@ -4,7 +4,7 @@ Library.__index = Library
 function Library:New()
     local self = setmetatable({}, Library)
     self.Config = {
-        Color = Color3.fromRGB(255, 80, 80),
+        Color = Color3.fromRGB(255,80,80),
         Box = true,
         Name = true,
         RefreshRate = 0.2
@@ -36,7 +36,6 @@ function Library:_makeESP(part, label)
     box.Thickness = 1
     box.Color = self.Config.Color
     box.Visible = false
-
     local text = Drawing.new("Text")
     text.Center = true
     text.Outline = true
@@ -44,7 +43,6 @@ function Library:_makeESP(part, label)
     text.Size = 16
     text.Text = label
     text.Visible = false
-
     self._espObjects[part] = {Part = part, Box = box, Text = text}
 end
 
@@ -59,7 +57,6 @@ function Library:_update()
                 esp.Box.Position = pos - esp.Box.Size / 2
                 esp.Box.Visible = self.Config.Box
                 esp.Box.Color = self.Config.Color
-
                 esp.Text.Position = Vector2.new(pos.X, pos.Y - size / 1.5)
                 esp.Text.Text = part.Name
                 esp.Text.Color = self.Config.Color
@@ -84,12 +81,10 @@ function Library:CreateESP()
         rconsoleprint("@@RED@@\n[ESP LIBRARY] Invalid input.\n")
         return
     end
-
     local targets = {}
     for name in input:gmatch("[^,]+") do
         table.insert(targets, name:match("^%s*(.-)%s*$"))
     end
-
     for _, obj in ipairs(workspace:GetDescendants()) do
         for _, target in ipairs(targets) do
             if obj.Name == target or obj.ClassName == target or obj:GetFullName():find(target) then
@@ -99,7 +94,6 @@ function Library:CreateESP()
             end
         end
     end
-
     rconsoleprint("@@GREEN@@[ESP LIBRARY] Tracking " .. tostring(#self._espObjects) .. " objects.\n")
 end
 
