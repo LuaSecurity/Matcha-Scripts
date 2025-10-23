@@ -1,100 +1,48 @@
-local Library = {}
-Library.__index = Library
+local ESP = {}
+ESP.Config = {
+    Color = Color3.fromRGB(255, 255, 255)
+}
 
-local cam = workspace.CurrentCamera
-local run = game:GetService("RunService")
+local drawings = {}
 
-local function toScreen(pos)
-    local v, vis = cam:WorldToViewportPoint(pos)
-    return Vector2.new(v.X, v.Y), vis
-end
+function ESP:CreateESP(obj)
+    if not obj or drawings[obj] then return end
 
-function Library:New()
-    local self = setmetatable({}, Library)
-    self.Color = Color3.fromRGB(255,255,255)
-    self.SizeOffset = Vector3.new(0,3,0)
-    self.Objects = {}
-    return self
-end
-
-function Library:_create(part)
-    local box_outline = Drawing.new("Square")
-    box_outline.Thickness = 3
-    box_outline.Filled = false
-    box_outline.Color = Color3.fromRGB(0,0,0)
     local box = Drawing.new("Square")
+    box.Color = self.Config.Color
     box.Thickness = 1
     box.Filled = false
-    box.Color = self.Color
-    local text = Drawing.new("Text")
-    text.Color = self.Color
-    text.Outline = true
-    text.Center = true
-    text.Size = 16
-    text.Text = part.Name
-    self.Objects[part] = {part=part,box=box,outline=box_outline,text=text}
+    box.Visible = true
+
+    drawings[obj] = box
 end
 
-function Library:_remove(obj)
-    if obj then
-        if obj.box then obj.box:Remove() end
-        if obj.outline then obj.outline:Remove() end
-        if obj.text then obj.text:Remove() end
-    end
-end
-
-function Library:CreateESP(target)
-    if typeof(target) == "string" then
-        target = workspace:FindFirstChild(target, true)
-    end
-    if not target then return end
-    local parts = {}
-    if target:IsA("BasePart") then
-        table.insert(parts, target)
-    elseif target:IsA("Model") or target:IsA("Folder") then
-        for _,v in pairs(target:GetDescendants()) do
-            if v:IsA("BasePart") then
-                table.insert(parts, v)
-            end
-        end
-    end
-    for _,part in pairs(parts) do
-        if not self.Objects[part] then
-            self:_create(part)
-        end
-    end
-end
-
-function Library:Start()
-    run.RenderStepped:Connect(function()
-        for part,obj in pairs(self.Objects) do
-            if not part or not part.Parent then
-                self:_remove(obj)
-                self.Objects[part]=nil
+function ESP:Update()
+    for obj, box in pairs(drawings) do
+        if obj and obj:IsDescendantOf(workspace) then
+            local pos, visible = WorldToScreen(obj.Position)
+            if visible then
+                box.Position = Vector2.new(pos.X - 10, pos.Y - 10)
+                box.Size = Vector2.new(20, 20)
+                box.Visible = true
+                box.Color = self.Config.Color
             else
-                local top,on1 = toScreen(part.Position+self.SizeOffset)
-                local bottom,on2 = toScreen(part.Position-self.SizeOffset)
-                if on1 and on2 then
-                    local h = math.abs(top.Y-bottom.Y)
-                    local w = h/1.5
-                    local x = top.X-w/2
-                    local y = top.Y
-                    obj.outline.Position=Vector2.new(x,y)
-                    obj.outline.Size=Vector2.new(w,h)
-                    obj.outline.Visible=true
-                    obj.box.Position=Vector2.new(x,y)
-                    obj.box.Size=Vector2.new(w,h)
-                    obj.box.Visible=true
-                    obj.text.Position=Vector2.new(top.X,y-16)
-                    obj.text.Visible=true
-                else
-                    obj.outline.Visible=false
-                    obj.box.Visible=false
-                    obj.text.Visible=false
-                end
+                box.Visible = false
             end
+        else
+            box:Remove()
+            drawings[obj] = nil
+        end
+    end
+end
+
+function ESP:Start()
+    task.spawn(function()
+        while true do
+            task.wait(0.01)
+            self:Update()
         end
     end)
 end
 
-return Library:New()
+return ESP
