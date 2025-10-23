@@ -1,115 +1,100 @@
 local Library = {}
 Library.__index = Library
 
-function Library:New()
-    local self = setmetatable({}, Library)
-    self.Config = {
-        Color = Color3.fromRGB(255,80,80),
-        Box = true,
-        Name = true,
-        RefreshRate = 0.2
-    }
-    self._espObjects = {}
-    self._running = false
-    return self
-end
-
 local cam = workspace.CurrentCamera
 local run = game:GetService("RunService")
 
 local function toScreen(pos)
-    local s, vis = cam:WorldToViewportPoint(pos)
-    return Vector2.new(s.X, s.Y), vis
+    local v, vis = cam:WorldToViewportPoint(pos)
+    return Vector2.new(v.X, v.Y), vis
 end
 
-function Library:_clear()
-    for _, esp in pairs(self._espObjects) do
-        if esp.Text then esp.Text:Remove() end
-        if esp.Box then esp.Box:Remove() end
-    end
-    table.clear(self._espObjects)
+function Library:New()
+    local self = setmetatable({}, Library)
+    self.Color = Color3.fromRGB(255,255,255)
+    self.SizeOffset = Vector3.new(0,3,0)
+    self.Objects = {}
+    return self
 end
 
-function Library:_makeESP(part, label)
+function Library:_create(part)
+    local box_outline = Drawing.new("Square")
+    box_outline.Thickness = 3
+    box_outline.Filled = false
+    box_outline.Color = Color3.fromRGB(0,0,0)
     local box = Drawing.new("Square")
-    box.Filled = false
     box.Thickness = 1
-    box.Color = self.Config.Color
-    box.Visible = false
+    box.Filled = false
+    box.Color = self.Color
     local text = Drawing.new("Text")
-    text.Center = true
+    text.Color = self.Color
     text.Outline = true
-    text.Color = self.Config.Color
+    text.Center = true
     text.Size = 16
-    text.Text = label
-    text.Visible = false
-    self._espObjects[part] = {Part = part, Box = box, Text = text}
+    text.Text = part.Name
+    self.Objects[part] = {part=part,box=box,outline=box_outline,text=text}
 end
 
-function Library:_update()
-    for part, esp in pairs(self._espObjects) do
-        if part and part.Parent then
-            local pos, vis = toScreen(part.Position)
-            if vis then
-                local dist = (cam.CFrame.Position - part.Position).Magnitude
-                local size = math.clamp(2000 / dist, 10, 100)
-                esp.Box.Size = Vector2.new(size, size)
-                esp.Box.Position = pos - esp.Box.Size / 2
-                esp.Box.Visible = self.Config.Box
-                esp.Box.Color = self.Config.Color
-                esp.Text.Position = Vector2.new(pos.X, pos.Y - size / 1.5)
-                esp.Text.Text = part.Name
-                esp.Text.Color = self.Config.Color
-                esp.Text.Visible = self.Config.Name
-            else
-                esp.Box.Visible = false
-                esp.Text.Visible = false
-            end
-        else
-            if esp.Box then esp.Box:Remove() end
-            if esp.Text then esp.Text:Remove() end
-            self._espObjects[part] = nil
-        end
+function Library:_remove(obj)
+    if obj then
+        if obj.box then obj.box:Remove() end
+        if obj.outline then obj.outline:Remove() end
+        if obj.text then obj.text:Remove() end
     end
 end
 
-function Library:CreateESP()
-    self:_clear()
-    rconsoleprint("@@YELLOW@@\n[ESP LIBRARY] Enter instance name, class, or path (comma-separated): ")
-    local input = rconsoleinput()
-    if not input or input == "" then
-        rconsoleprint("@@RED@@\n[ESP LIBRARY] Invalid input.\n")
-        return
+function Library:CreateESP(target)
+    if typeof(target) == "string" then
+        target = workspace:FindFirstChild(target, true)
     end
-    local targets = {}
-    for name in input:gmatch("[^,]+") do
-        table.insert(targets, name:match("^%s*(.-)%s*$"))
-    end
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        for _, target in ipairs(targets) do
-            if obj.Name == target or obj.ClassName == target or obj:GetFullName():find(target) then
-                if obj:IsA("BasePart") then
-                    self:_makeESP(obj, obj.Name)
-                end
+    if not target then return end
+    local parts = {}
+    if target:IsA("BasePart") then
+        table.insert(parts, target)
+    elseif target:IsA("Model") or target:IsA("Folder") then
+        for _,v in pairs(target:GetDescendants()) do
+            if v:IsA("BasePart") then
+                table.insert(parts, v)
             end
         end
     end
-    rconsoleprint("@@GREEN@@[ESP LIBRARY] Tracking " .. tostring(#self._espObjects) .. " objects.\n")
+    for _,part in pairs(parts) do
+        if not self.Objects[part] then
+            self:_create(part)
+        end
+    end
 end
 
 function Library:Start()
-    if self._running then return end
-    self._running = true
     run.RenderStepped:Connect(function()
-        if self._running then
-            self:_update()
+        for part,obj in pairs(self.Objects) do
+            if not part or not part.Parent then
+                self:_remove(obj)
+                self.Objects[part]=nil
+            else
+                local top,on1 = toScreen(part.Position+self.SizeOffset)
+                local bottom,on2 = toScreen(part.Position-self.SizeOffset)
+                if on1 and on2 then
+                    local h = math.abs(top.Y-bottom.Y)
+                    local w = h/1.5
+                    local x = top.X-w/2
+                    local y = top.Y
+                    obj.outline.Position=Vector2.new(x,y)
+                    obj.outline.Size=Vector2.new(w,h)
+                    obj.outline.Visible=true
+                    obj.box.Position=Vector2.new(x,y)
+                    obj.box.Size=Vector2.new(w,h)
+                    obj.box.Visible=true
+                    obj.text.Position=Vector2.new(top.X,y-16)
+                    obj.text.Visible=true
+                else
+                    obj.outline.Visible=false
+                    obj.box.Visible=false
+                    obj.text.Visible=false
+                end
+            end
         end
     end)
-end
-
-function Library:Stop()
-    self._running = false
-    self:_clear()
 end
 
 return Library:New()
