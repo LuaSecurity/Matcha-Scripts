@@ -1,10 +1,4 @@
-if _G.EspLibrary then
-    for _, info in pairs(_G.EspLibrary.Tracked or {}) do
-        if info.Text then info.Text:Remove() end
-        if info.Box then info.Box:Remove() end
-    end
-end
-
+-- Create global table if not exists
 _G.EspLibrary = _G.EspLibrary or {}
 local EspLibrary = _G.EspLibrary
 
@@ -38,7 +32,7 @@ local function ScanWorkspace()
             if inst.Name == name or inst.ClassName == name then
                 if inst:IsA("BasePart") or (inst:IsA("Model") and inst.PrimaryPart) then
                     local root = inst:IsA("BasePart") and inst or inst.PrimaryPart
-                    local addr = tostring(root:GetDebugId or root) -- unique id
+                    local addr = tostring(root)
                     valid[addr] = true
                     if not Tracked[addr] then
                         local text = Drawing.new("Text")
@@ -54,12 +48,7 @@ local function ScanWorkspace()
                         box.Color = cfg.Color or Color3.new(1,1,1)
                         box.Visible = false
 
-                        Tracked[addr] = {
-                            Root = root,
-                            Box = box,
-                            Text = text,
-                            Config = cfg
-                        }
+                        Tracked[addr] = {Root = root, Box = box, Text = text, Config = cfg}
                     end
                 end
             end
@@ -77,28 +66,20 @@ end
 
 local function UpdateESP()
     for _, info in pairs(Tracked) do
-        local root = info.Root
-        local box = info.Box
-        local text = info.Text
-        local cfg = info.Config
-
+        local root, box, text, cfg = info.Root, info.Box, info.Text, info.Config
         if root and root.Position then
             local headPos, onScreen1 = WorldToScreen(root.Position + Vector3.new(0,2,0))
             local legPos, onScreen2 = WorldToScreen(root.Position - Vector3.new(0,2,0))
-
             if onScreen1 and onScreen2 then
                 local h = math.abs(headPos.Y - legPos.Y)
                 local w = h / 1.5
-                local x = headPos.X - w/2
-                local y = headPos.Y
-
+                local x, y = headPos.X - w/2, headPos.Y
                 if box then
                     box.Position = Vector2.new(x,y)
                     box.Size = Vector2.new(w,h)
                     box.Visible = cfg.Box ~= false and EspLibrary.Config.Box
                     box.Color = cfg.Color or box.Color
                 end
-
                 if text then
                     text.Position = Vector2.new(headPos.X, y - 16)
                     text.Visible = cfg.Name ~= false and EspLibrary.Config.Name
