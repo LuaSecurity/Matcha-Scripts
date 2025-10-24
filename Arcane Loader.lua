@@ -54,7 +54,10 @@ task.wait(1)
 
 --> Loads
 if gameName == "Murder Mystery 2" then
-	print("hi")
+elseif gameName == "Boom Hood" then
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Boom%20Hood%20Candy%20Autofarm"))()
+elseif gameName == "Build A Boat For Treasure" then
+	loadstring(game:HttpGet('https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Build%20a%20Boat.lua'))()
 elseif gameName == "Arcane Hub Testing Place" then
 	print("Test place UwU")
 end
