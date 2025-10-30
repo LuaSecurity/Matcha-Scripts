@@ -77,15 +77,15 @@ _G.GameName = gameName -- because YES
 --> lil o' table
 local GameLoaders = {
     --["Murder Mystery 2"] = function() end,
-    ["Boom Hood"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Boom%20Hood%20Candy%20Autofarm") end,
-    ["Strongest Punch Simulator"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/StrongestPunchSimulator.lua") end,
-    ["Combat Initiation"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Combat%20Initiation.lua") end,
-    ["Prison Life"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/PrisonLife.lua") end,
-    ["Evade"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Evade.lua") end,
-    ["Defuse Division"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/DefuseDivision.lua") end,
-    ["Build A Boat For Treasure"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Build%20a%20Boat.lua") end,
-    ["Arsenal"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Arsenal.lua") end,
-    ["Counter Blox"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/CounterBlox.lua") end,
+    ["Boom Hood"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Boom%20Hood.lua") end,
+    ["Strongest Punch Simulator"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
+    ["Combat Initiation"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua") end,
+    ["Prison Life"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
+    ["Evade"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Evade.lua") end,
+    ["Defuse Division"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Defuse%20Division.lua") end,
+    ["Build A Boat For Treasure"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/BABFT.lua") end,
+    ["Arsenal"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Arsenal.lua") end,
+    ["Counter Blox"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Counter%20Blox.lua") end,
     ["Arcane Hub Testing Place"] = function() print("Test place UwU") end
 }
 
@@ -223,4 +223,5 @@ shishunki kizuguchi mune no uchi
 
 不可思議知りたいだけ
 fukashigi shiritai dake
+
 ]]
