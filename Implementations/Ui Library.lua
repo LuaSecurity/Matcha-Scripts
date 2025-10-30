@@ -1778,4 +1778,7 @@ function UILib:Destroy()
 
     self._tree = nil
     setrobloxinput(true)
+
 end
+
+return UILib
