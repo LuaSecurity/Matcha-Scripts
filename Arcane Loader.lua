@@ -80,7 +80,7 @@ local GameLoaders = {
     ["Boom Hood"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Boom%20Hood.lua") end,
     ["Strongest Punch Simulator"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
     ["Combat Initiation"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua") end,
-    ["Prison Life"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
+    ["Prison Life"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Prison%20Life.lua") end,
     ["Evade"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Evade.lua") end,
     ["Defuse Division"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Defuse%20Division.lua") end,
     ["Build A Boat For Treasure"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/BABFT.lua") end,
@@ -225,3 +225,4 @@ shishunki kizuguchi mune no uchi
 fukashigi shiritai dake
 
 ]]
+
