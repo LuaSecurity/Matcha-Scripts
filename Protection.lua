@@ -1,12 +1,12 @@
 task.spawn(function()
     for i = 1, 10 do
-      local Original = loadstring
+    local original_loadstring = loadstring
 
-      loadstring = function(Chunk, ChunkName)
-        if type(Chunk) == "string" then
+    loadstring = function(chunk, chunkname)
+        if type(chunk) == "string" then
         end
-        return Original(Chunk, ChunkName)
-      end
+        return original_loadstring(chunk, chunkname)
+        end
     end
 end)
 
