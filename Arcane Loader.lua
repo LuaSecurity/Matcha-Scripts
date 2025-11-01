@@ -14,9 +14,6 @@
 
     TODO:
         mm2:
-            sheriff esp
-            murder esp
-            grab gun - automatic grab gun
             kill all
             coin auto farm
 
@@ -41,6 +38,7 @@ local SupportedGames = {
     [155615604] = "Prison Life",
     [9872472334] = "Evade",
     [112757576021097] = "Defuse Division",
+    [142823291] = "Murder Mystery 2",
     
     [13559635034] = "Combat Initiation", -- these are literally SPECIAL lmfao
     [14582748896] = "Combat Initiation",
@@ -76,7 +74,7 @@ _G.GameName = gameName -- because YES
 
 --> lil o' table
 local GameLoaders = {
-    --["Murder Mystery 2"] = function() end,
+    ["Murder Mystery 2"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/MM2.lua") end,
     ["Boom Hood"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Boom%20Hood.lua") end,
     ["Strongest Punch Simulator"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
     ["Combat Initiation"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua") end,
@@ -225,4 +223,5 @@ shishunki kizuguchi mune no uchi
 fukashigi shiritai dake
 
 ]]
+
 
