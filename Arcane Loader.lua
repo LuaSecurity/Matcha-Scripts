@@ -31,69 +31,56 @@ local PlaceId = game.PlaceId
 local JobId = game.JobId
 local Username = LocalPlayer.Name
 
+--> Universal
+local Universal = "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Universal.lua"
+
 --> Supported Games
+-- [123] = {"hi", "https"}
 local SupportedGames = {
+    [286090429] = {"Arsenal", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Arsenal.lua"},
+    [7215881810] = {"Strongest Punch Simulator", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua"},
+    [155615604] = {"Prison Life", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Prison%20Life.lua"},
+    [9872472334] = {"Evade", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Evade.lua"},
+    [112757576021097] = {"Defuse Division", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Defuse%20Division.lua"},
+    [142823291] = {"Murder Mystery 2", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/MM2.lua"},
+    [301549746] = {"Counter Blox", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Counter%20Blox.lua"},
+    [93838124426523] = {"Boom Hood", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Boom%20Hood.lua"},
+    [537413528] = {"Build A Boat For Treasure", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/BABFT.lua"},
     
-    --[142823291] = "Murder Mystery 2",
-    
-    [286090429] = "Arsenal",
-    [7215881810] = "Strongest Punch Simulator",
-    [155615604] = "Prison Life",
-    [9872472334] = "Evade",
-    [112757576021097] = "Defuse Division",
-    [142823291] = "Murder Mystery 2",
-    [301549746] = "Counter Blox",
-    [93838124426523] = "Boom Hood",
-    [537413528] = "Build A Boat For Treasure",
-    
-    [13559635034] = "Combat Initiation", -- these are literally SPECIAL lmfao
-    [14582748896] = "Combat Initiation",
-    
-    [87812856808709] = "Arcane Hub Testing Place"
+    [13559635034] = {"Combat Initiation", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua"}, -- Special kids game idgaf
+    [14582748896] = {"Combat Initiation", "https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua"},
 }
 
 --> Functions
 local function GetSupportedGame(placeId)
-    local name = SupportedGames[placeId]
-    if not name then
-        return false, "Unsupported game." -- womp womp
+    local gameData = SupportedGames[placeId]
+    if not gameData then
+        return false, nil, nil
     end
-    return true, name
+    return true, gameData[1], gameData[2]
 end
 
 --> Main
-local isSupported, gameName = GetSupportedGame(PlaceId)
+local isSupported, gameName, scriptUrl = GetSupportedGame(PlaceId)
+
 if not isSupported then
-    return
+    print("Game not supported, Loading universal version.")
+    gameName = "Universal"
+    scriptUrl = Universal
+else
+    print("Supported game found: " .. gameName)
 end
 
-print("Supported game found: " .. gameName)
 print("Loading Arcane Hub!")
 
 task.wait(1)
 
 _G.GameName = gameName -- because YES
 
---> lil o' Table
-local GameLoaders = {
-    ["Murder Mystery 2"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/MM2.lua") end,
-    ["Boom Hood"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Boom%20Hood.lua") end,
-    ["Strongest Punch Simulator"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Strongest%20Punch%20Simulator.lua") end,
-    ["Combat Initiation"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Combat%20initiation.lua") end,
-    ["Prison Life"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Prison%20Life.lua") end,
-    ["Evade"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Evade.lua") end,
-    ["Defuse Division"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Defuse%20Division.lua") end,
-    ["Build A Boat For Treasure"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/BABFT.lua") end,
-    ["Arsenal"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Arsenal.lua") end,
-    ["Counter Blox"] = function() return game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Content/Counter%20Blox.lua") end,
-    ["Arcane Hub Testing Place"] = function() print("Test place UwU") end
-}
-
 --> Loads sript
-local loaderFunc = GameLoaders[gameName]
-if loaderFunc then
+if scriptUrl then
     local success = pcall(function()
-        local scriptContent = loaderFunc()
+        local scriptContent = game:HttpGet(scriptUrl)
         if scriptContent then
             loadstring(scriptContent)()
         end
@@ -107,85 +94,3 @@ if loaderFunc then
 end
 
 return Arcane -- i think it returns something, maybe a present.
-
---[[
-katarenai nemurenai toroimerai
-
-anata no miteru shoutai
-
-daremo yomenai karute
-
-fukashigi shiritai dake
-
-
-uso mo genjitsu mo
-
-docchi mo shinjitsu datta no hontou yo
-
-kyou mo hitorigoto
-
-nannimo muri wo shinaide
-
-watashi aisaretai
-
-
-uyamuya sayonara karui memai
-
-anata no inai genshoukai
-
-daremo yomenai karute
-
-jiishiki afuredashite
-
-
-kodou sekaizou
-
-itsumo kami awanai no itakute
-
-maiyo negaigoto
-
-nannimo utagawanaide
-
-mazari toke aitai
-
-
-tawainai wakaranai riyuu sonzai
-
-anata no nokosu koukai
-
-daremo yomenai karute
-
-fuyukai kurikaeshite
-
-
-tadashii yume wa kanashii koe wa
-
-utsukushii?
-
-utagawashii?
-
-urayamashii?
-
-nee, dore?
-
-
-katarenai nemurenai toroimerai
-
-anata no miteru shoutai
-
-daremo yomenai karute
-
-fukashigi shiritai dake
-
-
-owaranai koto wa nai toroimerai
-
-anata no matagau kyoukai
-
-daremo yomenai karute
-
-shishunki kizuguchi mune no uchi
-
-fukashigi shiritai dake
-
-]]
