@@ -252,7 +252,7 @@ spawn(function()
 			table.sort(activeNotifications, function(a, b)
 				return a.ID < b.ID
 			end)
-			local gameWindowSize = game.Workspace.CurrentCamera.ViewportSize
+			local gameWindowSize = game.CoreGui.RobloxGui.SettingsClippingShield.AbsoluteSize
 			local baseX = gameWindowSize.X - NOTIFICATION_WIDTH - 4
 			
 			for index, notif in pairs(activeNotifications) do
@@ -274,3 +274,7 @@ end
 local notify = setupNotifications()
 
 _G.notify = notify
+
+--[[
+notify.CreateNotification("Staff Notification", "There is currently 2 staffs in your session", 5, 10, nil, nil, Color3.fromRGB(math.random(0, 255),math.random(0, 255),math.random(0, 255)))
+]]
