@@ -214,7 +214,7 @@ spawn(function()
 			for _, v in pairs(activeNotifications) do
 				if v.Initialized == false and v.Initializing == false then
 					v.Initializing = true
-					local gameWindowSize = game.Workspace.CurrentCamera.ViewportSize
+					local gameWindowSize = game.CoreGui.RobloxGui.SettingsClippingShield.AbsoluteSize
 					updateRelativePosition(v, Vector2.new(gameWindowSize.X - 212, gameWindowSize.Y - 70))
 					v.Initialized = true
 					spawn(function()
