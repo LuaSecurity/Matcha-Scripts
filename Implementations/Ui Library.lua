@@ -32,7 +32,10 @@ local function getPing(raw)
     return ("Ping: %sms"):format(math.floor(ping))
 end
 
-local UILib = require('workspace/x11-colorpicker.lua') -- import however you prefer!
+loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Implementations/Ui%20Library.lua"))()
+
+repeat task.wait() until UILib ~= nil
+
 local myGui = UILib.new('chatgpthaxx', Vector2.new(320, 380), {getPing})
 
 local visualsTab = myGui:Tab('Visuals')
@@ -1782,3 +1785,4 @@ function UILib:Destroy()
 end
 
 return UILib
+
