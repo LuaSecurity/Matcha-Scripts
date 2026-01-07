@@ -1,3 +1,5 @@
+
+-- Hi pookie!!! why u reading this?
 --[[
 
     🎄 Hello Jolly skidder!! 🎄
@@ -8,6 +10,7 @@
     my sources, its VERY bad quality
     and i don't think its optimized
     lol
+
 
 🎁     Donate here:
     https://www.roblox.com/game-pass/1480054132/
@@ -94,3 +97,4 @@ if scriptUrl then
 end
 
 return Arcane -- i think it returns something, maybe a present.
+
