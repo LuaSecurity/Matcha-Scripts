@@ -76,6 +76,19 @@ end
 
 print("Loading Arcane Hub!")
 
+local Players = game:GetService("Players")
+
+local BaseUrl = "https://arcanecheats.xyz/api/activity/"
+local Product = "Arcane" 
+local Username = Players.LocalPlayer.Name
+local PlaceId = tostring(game.PlaceId)
+
+local RequestUrl = BaseUrl .. Product .. "=?:" .. Username .. "=k:" .. PlaceId
+
+pcall(function()
+    game:HttpGet(RequestUrl)
+end)
+
 task.wait(1)
 
 _G.GameName = gameName -- because YES
@@ -97,4 +110,5 @@ if scriptUrl then
 end
 
 return Arcane -- i think it returns something, maybe a present.
+
 
