@@ -1,8 +1,6 @@
-
--- Hi pookie!!! why u reading this?
 --[[
 
-    🎄 Hello Jolly skidder!! 🎄
+    Hello skidder!!
 
     How are you my fellow skid? I am
     surprised you got here! I'd like
@@ -11,8 +9,7 @@
     and i don't think its optimized
     lol
 
-
-🎁     Donate here:
+    Donate here:
     https://www.roblox.com/game-pass/1480054132/
 
     TODO:
@@ -67,26 +64,13 @@ end
 local isSupported, gameName, scriptUrl = GetSupportedGame(PlaceId)
 
 if not isSupported then
-    print("Game not supported, Loading universal version.")
-    gameName = "Universal"
-    scriptUrl = Universal
+    print("Game not supported!")
+    return
 else
     print("Supported game found: " .. gameName)
 end
 
 print("Loading Arcane Hub!")
-
-local Players = game:GetService("Players")
-local BaseUrl = "https://arcanecheats.xyz/api/activity/"
-local Product = "Arcane" 
-local Username = Players.LocalPlayer.Name
-local PlaceId = tostring(game.PlaceId)
-
-local RequestUrl = BaseUrl .. Product .. "/" .. Username .. "/" .. PlaceId
-
-pcall(function()
-    game:HttpGet(RequestUrl)
-end)
 
 task.wait(1)
 
@@ -108,7 +92,4 @@ if scriptUrl then
     end
 end
 
-return Arcane -- i think it returns something, maybe a present.
-
-
-
+return Arcane -- blehbh
