@@ -1,1788 +1,1256 @@
---[[
+local Players = game:GetService("Players")
 
-v1 x11 ui lib
-@nulare on discord
+Arcane = {}
+drawings = {}
+local tabs = {}
+ActiveKeybinds = {}
+ActiveNotifications = {}
+local OpenDropdown = nil
 
-UILib.new(<string> identity, <table> watermarkActivity) -> UILib
+local themes = {
+    Default = {
+        Background = Color3.fromRGB(15, 15, 15),
+        Section = Color3.fromRGB(22, 22, 22),
+        Accent = Color3.fromRGB(210, 140, 160),
+        Outline = Color3.fromRGB(40, 40, 40),
+        Text = Color3.fromRGB(230, 230, 230),
+        TextDark = Color3.fromRGB(140, 140, 140),
+        Button = Color3.fromRGB(28, 28, 28)
+    },
+    Dracula = {
+        Background = Color3.fromRGB(40, 42, 54),
+        Section = Color3.fromRGB(52, 55, 70),
+        Accent = Color3.fromRGB(189, 147, 249),
+        Outline = Color3.fromRGB(68, 71, 90),
+        Text = Color3.fromRGB(248, 248, 242),
+        TextDark = Color3.fromRGB(98, 114, 164),
+        Button = Color3.fromRGB(68, 71, 90)
+    },
+    Catppuccin = {
+        Background = Color3.fromRGB(30, 30, 46),
+        Section = Color3.fromRGB(49, 50, 68),
+        Accent = Color3.fromRGB(203, 166, 247),
+        Outline = Color3.fromRGB(88, 91, 112),
+        Text = Color3.fromRGB(205, 214, 244),
+        TextDark = Color3.fromRGB(166, 173, 200),
+        Button = Color3.fromRGB(69, 71, 90)
+    },
+    Gruvbox = {
+        Background = Color3.fromRGB(40, 40, 40),
+        Section = Color3.fromRGB(50, 48, 47),
+        Accent = Color3.fromRGB(214, 93, 14),
+        Outline = Color3.fromRGB(60, 56, 54),
+        Text = Color3.fromRGB(235, 219, 178),
+        TextDark = Color3.fromRGB(146, 131, 116),
+        Button = Color3.fromRGB(80, 73, 69)
+    },
+    Nord = {
+        Background = Color3.fromRGB(46, 52, 64),
+        Section = Color3.fromRGB(59, 66, 82),
+        Accent = Color3.fromRGB(136, 192, 208),
+        Outline = Color3.fromRGB(76, 86, 106),
+        Text = Color3.fromRGB(236, 239, 244),
+        TextDark = Color3.fromRGB(216, 222, 233),
+        Button = Color3.fromRGB(67, 76, 94)
+    },
+    TokyoNight = {
+        Background = Color3.fromRGB(26, 27, 38),
+        Section = Color3.fromRGB(36, 40, 59),
+        Accent = Color3.fromRGB(122, 162, 247),
+        Outline = Color3.fromRGB(65, 72, 104),
+        Text = Color3.fromRGB(192, 202, 245),
+        TextDark = Color3.fromRGB(86, 95, 137),
+        Button = Color3.fromRGB(59, 66, 97)
+    },
+    OneDark = {
+        Background = Color3.fromRGB(40, 44, 52),
+        Section = Color3.fromRGB(44, 50, 60),
+        Accent = Color3.fromRGB(97, 175, 239),
+        Outline = Color3.fromRGB(61, 67, 80),
+        Text = Color3.fromRGB(171, 178, 191),
+        TextDark = Color3.fromRGB(92, 99, 112),
+        Button = Color3.fromRGB(53, 59, 69)
+    },
+    RosePine = {
+        Background = Color3.fromRGB(25, 23, 36),
+        Section = Color3.fromRGB(31, 29, 46),
+        Accent = Color3.fromRGB(235, 188, 186),
+        Outline = Color3.fromRGB(64, 61, 82),
+        Text = Color3.fromRGB(224, 222, 244),
+        TextDark = Color3.fromRGB(144, 140, 170),
+        Button = Color3.fromRGB(42, 40, 62)
+    },
+    Synthwave84 = {
+        Background = Color3.fromRGB(38, 35, 53),
+        Section = Color3.fromRGB(45, 41, 65),
+        Accent = Color3.fromRGB(255, 122, 215),
+        Outline = Color3.fromRGB(104, 82, 126),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextDark = Color3.fromRGB(174, 133, 223),
+        Button = Color3.fromRGB(55, 50, 75)
+    },
+    SolarizedDark = {
+        Background = Color3.fromRGB(0, 43, 54),
+        Section = Color3.fromRGB(7, 54, 66),
+        Accent = Color3.fromRGB(38, 139, 210),
+        Outline = Color3.fromRGB(88, 110, 117),
+        Text = Color3.fromRGB(147, 161, 161),
+        TextDark = Color3.fromRGB(101, 123, 131),
+        Button = Color3.fromRGB(0, 43, 54)
+    },
+    Everforest = {
+        Background = Color3.fromRGB(43, 51, 57),
+        Section = Color3.fromRGB(51, 59, 64),
+        Accent = Color3.fromRGB(167, 192, 128),
+        Outline = Color3.fromRGB(74, 82, 87),
+        Text = Color3.fromRGB(211, 198, 170),
+        TextDark = Color3.fromRGB(122, 132, 122),
+        Button = Color3.fromRGB(58, 66, 71)
+    },
+    Midnight = {
+        Background = Color3.fromRGB(10, 10, 15),
+        Section = Color3.fromRGB(15, 15, 25),
+        Accent = Color3.fromRGB(0, 120, 255),
+        Outline = Color3.fromRGB(30, 30, 50),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextDark = Color3.fromRGB(100, 100, 150),
+        Button = Color3.fromRGB(20, 20, 35)
+    }
+}
 
-UILib:Tab(<string> name) -> tabName
-UILib:Section(<tabName>, <string> name) -> sectionName
-UILib:CreateSettingsTab(<string> customName) -> tabName, sectionName, sectionName
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
 
-UILib:Checkbox(<tabName>, <sectionName>, <string> label, <boolean> defaultValue, <function> callback)
-UILib:Slider(<tabName>, <sectionName>, <string> label, <number> defaultValue, <function> callback, <number> min, <number> max, <number> step, <string> appendix)
-UILib:Choice(<tabName>, <sectionName>, <string> label, <table> defaultValue, <function | nil> callback, <table> choices, <boolean> multi)
-UILib:Colorpicker(<tabName>, <sectionName>, <string> label, <table[3]> defaultValue, <function | nil> callback)
-UILib:Keybind(<tabName>, <sectionName>, <string> label, <string(Keycode)> defaultValue, <function | nil> callback, <string: 'Hold', 'Toggle', 'Always'> mode)
-
-UILib:ToggleMenu(boolean)
-UILib:ToggleWatermark(boolean)
-UILib:Step()
-UILib:Destroy()
-
-Example usage:
-local function getPing(raw)
-    local pingAddress = game:FindFirstChild("Stats"):FindFirstChild("PerformanceStats"):FindFirstChild("Ping").Address
-    local ping = memory_read("double", pingAddress + 0xC8)
-
-    if raw then
-        return ping
-    end
-
-    return ("Ping: %sms"):format(math.floor(ping))
+local function lerp(a, b, t)
+    if not a or not b or not t then return 0 end
+    return a * (1 - t) + b * t
 end
-
-loadstring(game:HttpGet("https://raw.githubusercontent.com/LuaSecurity/Matcha-Scripts/refs/heads/main/Implementations/Ui%20Library.lua"))()
-
-repeat task.wait() until UILib ~= nil
-
-local myGui = UILib.new('chatgpthaxx', Vector2.new(320, 380), {getPing})
-
-local visualsTab = myGui:Tab('Visuals')
-local espSection = myGui:Section(visualsTab, 'General')
-myGui:Checkbox(visualsTab, espSection, 'Master', false, function(state)
-    printl('ESP:', state)
-end)
-myGui:Slider(visualsTab, espSection, 'Distance', 2500, function(value)
-    printl('ESP distance:', value)
-end, 100, 2500, 100, ' studs')
-
-local playerEspSection = myGui:Section(visualsTab, 'Players')
-myGui:Checkbox(visualsTab, playerEspSection, 'BBox', false, function(state)
-    printl('BBox:', state)
-end)
-myGui:Checkbox(visualsTab, playerEspSection, 'Name', false, function(state)
-    printl('Name:', state)
-end)
-myGui:Checkbox(visualsTab, playerEspSection, 'Distance', false, function(state)
-    printl('Distance:', state)
-end)
-myGui:Choice(visualsTab, playerEspSection, 'Flags', {}, function(values)
-    printl('Flags:', table.concat(values, ', '))
-end, {'Health', 'Humanoid state'}, true)
-myGui:Colorpicker(visualsTab, playerEspSection, 'Box color', {255, 0, 0}, nil)
-myGui:Keybind(visualsTab, playerEspSection, 'Toggle', 'm3', nil, 'Toggle')
-myGui:CreateSettingsTab()
-local running = true
-myGui:Checkbox(visualsTab, playerEspSection, 'Unload', false, function(state)
-    running = false
-end)
-while running do
-    myGui:Step()
-    wait(0.0015)
-end
-myGui:Destroy()
-
-]]
-
-UILib = {}
-UILib.__index = UILib
-
-ESP_FONTSIZE = 7 -- works great with ProggyClean
-
-BLACK = Color3.new(0, 0, 0)
-
-local myPlayer = game:GetService('Players').LocalPlayer
-local myMouse = myPlayer:GetMouse()
 
 local function clamp(x, a, b)
-    if x > b then
-        return b
-    elseif a < a then
-        return a
-    else
-        return x
-    end
+    if x > b then return b elseif x < a then return a else return x end
 end
 
-local function color3fromHSV(h, s, v)
-    local i = math.floor(h * 6)
-    local f = h * 6 - i
-    local p = v * (1 - s)
-    local q = v * (1 - f * s)
-    local t = v * (1 - (1 - f) * s)
-    i = i % 6
+local function lerpColor(c1, c2, t)
+    return Color3.new(
+        lerp(c1.R, c2.R, t),
+        lerp(c1.G, c2.G, t),
+        lerp(c1.B, c2.B, t)
+    )
+end
 
-    local r, g, b
-    if i == 0 then r, g, b = v, t, p
-    elseif i == 1 then r, g, b = q, v, p
-    elseif i == 2 then r, g, b = p, v, t
-    elseif i == 3 then r, g, b = p, q, v
-    elseif i == 4 then r, g, b = t, p, v
-    else r, g, b = v, p, q end
+local function Insert(t, v)
+    table.insert(t, v)
+end
 
-    return {r * 255, g * 255, b * 255}
+function Arcane:AddTheme(name, config)
+    themes[name] = config
+end
+
+local function Draw(t, props)
+    local o = Drawing.new(t)
+    for k, v in pairs(props) do
+        o[k] = v
+    end
+    Insert(drawings, o)
+    return o
+end
+
+
+-- Sorry for leaking the method guys mwahahahahahhaha
+local function createGlow(obj, size, pos, corner, spread, color)
+    local layers = {}
+    for i = 1, spread do
+        local glow = Drawing.new("Square")
+        glow.Visible = obj.Visible
+        glow.Filled = false
+        glow.Thickness = 1.5
+        glow.Transparency = 0.2 * (1 - (i / spread))
+        glow.Color = color
+        glow.Size = size + Vector2.new(i * 4, i * 4)
+        glow.Position = pos - Vector2.new(i * 2, i * 2)
+        glow.Corner = corner + i
+        layers[i] = glow
+        Insert(drawings, glow)
+    end
+    return layers
 end
 
 local function getMousePos()
-    return Vector2.new(myMouse.X, myMouse.Y) 
+    return Vector2.new(Mouse.X, Mouse.Y)
 end
 
-local function lerp(a, b, t)
-    return a + (b - a) * t
+local function isMouseOver(pos, size)
+    local m = getMousePos()
+    return m.X >= pos.X and m.X <= pos.X + size.X
+    and m.Y >= pos.Y and m.Y <= pos.Y + size.Y
 end
 
-local function undrawAll(drawingsTable)
-    for _, drawing in pairs(drawingsTable) do
-        drawing.Visible = false
-    end
+local KeyCodeNames = {
+    ["None"] = 0, ["Enter"] = 0x0D, ["Space"] = 0x20, ["Backspace"] = 0x08,
+    ["0"] = 0x30, ["1"] = 0x31, ["2"] = 0x32, ["3"] = 0x33, ["4"] = 0x34, 
+    ["5"] = 0x35, ["6"] = 0x36, ["7"] = 0x37, ["8"] = 0x38, ["9"] = 0x39,
+    ["A"] = 0x41, ["B"] = 0x42, ["C"] = 0x43, ["D"] = 0x44, ["E"] = 0x45, 
+    ["F"] = 0x46, ["G"] = 0x47, ["H"] = 0x48, ["I"] = 0x49, ["J"] = 0x4A, 
+    ["K"] = 0x4B, ["L"] = 0x4C, ["M"] = 0x4D, ["N"] = 0x4E, ["O"] = 0x4F, 
+    ["P"] = 0x50, ["Q"] = 0x51, ["R"] = 0x52, ["S"] = 0x53, ["T"] = 0x54, 
+    ["U"] = 0x55, ["V"] = 0x56, ["W"] = 0x57, ["X"] = 0x58, ["Y"] = 0x59, ["Z"] = 0x5A,
+    ["Insert"] = 0x2D, ["Delete"] = 0x2E, ["Home"] = 0x24, ["End"] = 0x23, ["PageUp"] = 0x21, ["PageDown"] = 0x22,
+    ["F1"] = 0x70, ["F2"] = 0x71, ["F3"] = 0x72, ["F4"] = 0x73, ["F5"] = 0x74, ["F6"] = 0x75, ["F7"] = 0x76, ["F8"] = 0x77, ["F9"] = 0x78, ["F10"] = 0x79, ["F11"] = 0x7A, ["F12"] = 0x7B
+}
+
+local ReverseKeyCodeNames = {}
+for k, v in pairs(KeyCodeNames) do ReverseKeyCodeNames[v] = k end
+
+local function GetKeyName(kc)
+    return ReverseKeyCodeNames[kc] or "Key: " .. tostring(kc)
 end
 
-local function destroyAllDrawings(drawingsTable)
-    for _, drawing in ipairs(drawingsTable) do
-        drawing:Remove()
-    end
+function Arcane:Notify(title, text, duration)
+    spawn(function()
+        local theme = themes.Default
+        local duration = duration or 5
+        local id = {}
+        
+        local function wrapText(str, limit)
+            local res = ""
+            for i = 1, #str do
+                res = res .. str:sub(i, i)
+                if i > 0 and i % limit == 0 then res = res .. "\n" end
+            end
+            return res
+        end
+
+        local processedText = wrapText(text, 35)
+        
+        local elements = {
+            Outline = Draw("Square", {Size = Vector2.new(208, 64), Color = theme.Accent, Filled = true, ZIndex = 2000, Visible = true}),
+            Background = Draw("Square", {Size = Vector2.new(204, 60), Color = theme.Background, Filled = true, ZIndex = 2001, Visible = true}),
+            Title = Draw("Text", {Text = title, Size = 16, Color = theme.Accent, Font = 2, ZIndex = 2002, Visible = true}),
+            Text = Draw("Text", {Text = processedText, Size = 14, Color = theme.Text, Font = 2, ZIndex = 2002, Visible = true}),
+            BarBG = Draw("Square", {Size = Vector2.new(190, 2), Color = theme.Accent, Transparency = 0.3, Filled = true, ZIndex = 2002, Visible = true}),
+            Bar = Draw("Square", {Size = Vector2.new(190, 2), Color = theme.Accent, Filled = true, ZIndex = 2003, Visible = true})
+        }
+
+        local data = {ID = id, Elements = elements}
+        table.insert(ActiveNotifications, data)
+
+        local elapsed = 0
+        while elapsed < duration do
+            local waitTime = task.wait(0.03) or 0.03
+            elapsed = elapsed + waitTime
+            
+            local percent = clamp(1 - (elapsed / duration), 0, 1)
+            
+            local index = 0
+            for i, v in ipairs(ActiveNotifications) do
+                if v.ID == id then index = i break end
+            end
+
+            if index > 0 then
+                local screenWidth = 1920
+                local screenHeight = 1080
+
+                local targetY = screenHeight - 80 - ((index - 1) * 75)
+                local targetPos = Vector2.new(screenWidth - 220, targetY)
+
+                elements.Outline.Position = targetPos - Vector2.new(2, 2)
+                elements.Background.Position = targetPos
+                elements.Title.Position = targetPos + Vector2.new(8, 5)
+                elements.Text.Position = targetPos + Vector2.new(8, 25)
+                elements.BarBG.Position = targetPos + Vector2.new(8, 52)
+                elements.Bar.Position = targetPos + Vector2.new(8, 52)
+                elements.Bar.Size = Vector2.new(190 * percent, 2)
+            end
+        end
+        
+        for i, v in ipairs(ActiveNotifications) do
+            if v.ID == id then table.remove(ActiveNotifications, i) break end
+        end
+        for _, el in pairs(elements) do el:Remove() end
+    end)
 end
 
-function UILib.new(name, size, watermarkActivity)
-    repeat -- iskeypressed is halting our matcha menu button
-        wait(1/9999)
-    until isrbxactive()
+function Arcane:Log(text, duration)
+    spawn(function()
+        local theme = themes.Default
+        local duration = duration or 5
+        local id = {}
+        
+        local elements = {
+            Outline = Drawing.new("Square"),
+            Background = Drawing.new("Square"),
+            Bar = Drawing.new("Square"),
+            Text = Drawing.new("Text")
+        }
 
-    local self = setmetatable({}, UILib)
+        elements.Outline.Size = Vector2.new(350, 26)
+        elements.Outline.Color = theme.Accent
+        elements.Outline.Filled = true
+        elements.Outline.ZIndex = 2010
+        elements.Outline.Visible = false
 
-    -- input
-    self._inputs = {
-        ['m1'] = { id = 0x01, held = false, click = false },
-        ['m2'] = { id = 0x02, held = false, click = false },
-        ['mb'] = { id = 0x04, held = false, click = false },
-        ['unbound'] = { id = 0x08, held = false, click = false },
-        ['tab'] = { id = 0x09, held = false, click = false },
-        ['enter'] = { id = 0x0D, held = false, click = false },
-        ['shift'] = { id = 0x10, held = false, click = false },
-        ['ctrl'] = { id = 0x11, held = false, click = false },
-        ['alt'] = { id = 0x12, held = false, click = false },
-        ['pause'] = { id = 0x13, held = false, click = false },
-        ['capslock'] = { id = 0x14, held = false, click = false },
-        ['esc'] = { id = 0x1B, held = false, click = false },
-        ['space'] = { id = 0x20, held = false, click = false },
-        ['pageup'] = { id = 0x21, held = false, click = false },
-        ['pagedown'] = { id = 0x22, held = false, click = false },
-        ['end'] = { id = 0x23, held = false, click = false },
-        ['home'] = { id = 0x24, held = false, click = false },
-        ['left'] = { id = 0x25, held = false, click = false },
-        ['up'] = { id = 0x26, held = false, click = false },
-        ['right'] = { id = 0x27, held = false, click = false },
-        ['down'] = { id = 0x28, held = false, click = false },
-        ['insert'] = { id = 0x2D, held = false, click = false },
-        ['delete'] = { id = 0x2E, held = false, click = false },
-        ['0'] = { id = 0x30, held = false, click = false },
-        ['1'] = { id = 0x31, held = false, click = false },
-        ['2'] = { id = 0x32, held = false, click = false },
-        ['3'] = { id = 0x33, held = false, click = false },
-        ['4'] = { id = 0x34, held = false, click = false },
-        ['5'] = { id = 0x35, held = false, click = false },
-        ['6'] = { id = 0x36, held = false, click = false },
-        ['7'] = { id = 0x37, held = false, click = false },
-        ['8'] = { id = 0x38, held = false, click = false },
-        ['9'] = { id = 0x39, held = false, click = false },
-        ['a'] = { id = 0x41, held = false, click = false },
-        ['b'] = { id = 0x42, held = false, click = false },
-        ['c'] = { id = 0x43, held = false, click = false },
-        ['d'] = { id = 0x44, held = false, click = false },
-        ['e'] = { id = 0x45, held = false, click = false },
-        ['f'] = { id = 0x46, held = false, click = false },
-        ['g'] = { id = 0x47, held = false, click = false },
-        ['h'] = { id = 0x48, held = false, click = false },
-        ['i'] = { id = 0x49, held = false, click = false },
-        ['j'] = { id = 0x4A, held = false, click = false },
-        ['k'] = { id = 0x4B, held = false, click = false },
-        ['l'] = { id = 0x4C, held = false, click = false },
-        ['m'] = { id = 0x4D, held = false, click = false },
-        ['n'] = { id = 0x4E, held = false, click = false },
-        ['o'] = { id = 0x4F, held = false, click = false },
-        ['p'] = { id = 0x50, held = false, click = false },
-        ['q'] = { id = 0x51, held = false, click = false },
-        ['r'] = { id = 0x52, held = false, click = false },
-        ['s'] = { id = 0x53, held = false, click = false },
-        ['t'] = { id = 0x54, held = false, click = false },
-        ['u'] = { id = 0x55, held = false, click = false },
-        ['v'] = { id = 0x56, held = false, click = false },
-        ['w'] = { id = 0x57, held = false, click = false },
-        ['x'] = { id = 0x58, held = false, click = false },
-        ['y'] = { id = 0x59, held = false, click = false },
-        ['z'] = { id = 0x5A, held = false, click = false },
-        -- ['lwin'] = { id = 0x5B, held = false, click = false },
-        -- ['rwin'] = { id = 0x5C, held = false, click = false },
-        ['numpad0'] = { id = 0x60, held = false, click = false },
-        ['numpad1'] = { id = 0x61, held = false, click = false },
-        ['numpad2'] = { id = 0x62, held = false, click = false },
-        ['numpad3'] = { id = 0x63, held = false, click = false },
-        ['numpad4'] = { id = 0x64, held = false, click = false },
-        ['numpad5'] = { id = 0x65, held = false, click = false },
-        ['numpad6'] = { id = 0x66, held = false, click = false },
-        ['numpad7'] = { id = 0x67, held = false, click = false },
-        ['numpad8'] = { id = 0x68, held = false, click = false },
-        ['numpad9'] = { id = 0x69, held = false, click = false },
-        ['multiply'] = { id = 0x6A, held = false, click = false },
-        ['add'] = { id = 0x6B, held = false, click = false },
-        ['separator'] = { id = 0x6C, held = false, click = false },
-        ['subtract'] = { id = 0x6D, held = false, click = false },
-        ['decimal'] = { id = 0x6E, held = false, click = false },
-        ['divide'] = { id = 0x6F, held = false, click = false },
-        ['f1'] = { id = 0x70, held = false, click = false },
-        ['f2'] = { id = 0x71, held = false, click = false },
-        ['f3'] = { id = 0x72, held = false, click = false },
-        ['f4'] = { id = 0x73, held = false, click = false },
-        ['f5'] = { id = 0x74, held = false, click = false },
-        ['f6'] = { id = 0x75, held = false, click = false },
-        ['f7'] = { id = 0x76, held = false, click = false },
-        ['f8'] = { id = 0x77, held = false, click = false },
-        ['f9'] = { id = 0x78, held = false, click = false },
-        ['f10'] = { id = 0x79, held = false, click = false },
-        ['f11'] = { id = 0x7A, held = false, click = false },
-        ['f12'] = { id = 0x7B, held = false, click = false },
-        ['numlock'] = { id = 0x90, held = false, click = false },
-        ['scrolllock'] = { id = 0x91, held = false, click = false },
-        ['lshift'] = { id = 0xA0, held = false, click = false },
-        ['rshift'] = { id = 0xA1, held = false, click = false },
-        ['lctrl'] = { id = 0xA2, held = false, click = false },
-        ['rctrl'] = { id = 0xA3, held = false, click = false },
-        ['lalt'] = { id = 0xA4, held = false, click = false },
-        ['ralt'] = { id = 0xA5, held = false, click = false },
-        ['semicolon'] = { id = 0xBA, held = false, click = false },
-        ['plus'] = { id = 0xBB, held = false, click = false },
-        ['comma'] = { id = 0xBC, held = false, click = false },
-        ['minus'] = { id = 0xBD, held = false, click = false },
-        ['period'] = { id = 0xBE, held = false, click = false },
-        ['slash'] = { id = 0xBF, held = false, click = false },
-        ['tilde'] = { id = 0xC0, held = false, click = false },
-        ['lbracket'] = { id = 0xDB, held = false, click = false },
-        ['backslash'] = { id = 0xDC, held = false, click = false },
-        ['rbracket'] = { id = 0xDD, held = false, click = false },
-        ['quote'] = { id = 0xDE, held = false, click = false },
-    }
+        elements.Background.Size = Vector2.new(348, 24)
+        elements.Background.Color = theme.Background
+        elements.Background.Filled = true
+        elements.Background.ZIndex = 2011
+        elements.Background.Visible = false
 
-    self._active_tab = nil
-    self._open = true
-    self._watermark = true
-    self._base_opacity = 0
-    self._dragging = false
-    self._drag_offset = Vector2.new(0, 0)
-    self._active_dropdown = nil
-    self._active_colorpicker = nil
-    self._clipboard_color = nil
-    self._tick = os.clock()
+        elements.Bar.Size = Vector2.new(4, 24)
+        elements.Bar.Color = theme.Accent
+        elements.Bar.Filled = true
+        elements.Bar.ZIndex = 2012
+        elements.Bar.Visible = false
 
-    -- user
-    self.identity = name
-    self._watermark_activity = watermarkActivity
-    self.x = 20
-    self.y = 60
-    self.w = size and size.x or 300
-    self.h = size and size.y or 400
+        elements.Text.Text = text
+        elements.Text.Size = 13
+        elements.Text.Color = theme.Text
+        elements.Text.Font = Drawing.Fonts.System
+        elements.Text.ZIndex = 2020
+        elements.Text.Visible = false
 
-    -- theme
-    self._color_accent = Color3.fromRGB(170, 85, 255)
-    self._color_text = Color3.fromRGB(230, 225, 255)
-    self._color_crust = Color3.fromRGB(10, 5, 15)
-    self._color_border = Color3.fromRGB(30, 15, 45)
-    self._color_surface = Color3.fromRGB(40, 20, 60)
-    self._color_overlay = Color3.fromRGB(70, 40, 100)
+        local data = {ID = id, Elements = elements}
+        table.insert(ActiveNotifications, data)
 
-    -- styling
-    self._title_h = 25
-    self._tab_h = 20
-    self._padding = 6
-    self._gradient_detail = 80
+        local elapsed = 0
+        local animProgress = 0
 
-    -- menu base
-    local base = Drawing.new('Square')
-    base.Filled = true
-    base.Color = self._color_surface
+        while elapsed < duration do
+            local dt = wait() or 0.03
+            elapsed = elapsed + dt
+            
+            if animProgress < 1 then
+                animProgress = math.min(animProgress + (dt * 1.0), 1)
+            end
 
-    local crust = Drawing.new('Square')
-    crust.Filled = false
-    crust.Thickness = 1
-    crust.Color = self._color_crust
+            local alpha = animProgress
+            if duration - elapsed < 0.5 then
+                alpha = math.max((duration - elapsed) / 0.5, 0)
+            end
 
-    local border = Drawing.new('Square')
-    border.Filled = false
-    border.Thickness = 1
-    border.Color = self._color_border
+            local index = 0
+            for i, v in ipairs(ActiveNotifications) do
+                if v.ID == id then index = i break end
+            end
 
-    local navbar = Drawing.new('Square')
-    navbar.Filled = true
-    navbar.Color = self._color_border
+            if index > 0 then
+                if alpha > 0 and not elements.Outline.Visible then
+                    elements.Outline.Visible = true
+                    elements.Background.Visible = true
+                    elements.Bar.Visible = true
+                    elements.Text.Visible = true
+                end
 
-    local title = Drawing.new('Text')
-    title.Text = self.identity
-    title.Outline = true
-    title.Color = self._color_text
+                local slideOffset = (1 - animProgress) * -400
+                local targetX = 20 + slideOffset
+                local targetY = 50 + ((index - 1) * 30)
+                local targetPos = Vector2.new(targetX, targetY)
 
-    -- watermark
-    local watermarkBase = Drawing.new('Square')
-    watermarkBase.Filled = true
-    watermarkBase.Color = self._color_surface
-
-    local watermarkCursor = Drawing.new('Square')
-    watermarkCursor.Filled = true
-    watermarkCursor.Color = self._color_accent
-
-    local watermarkCrust = Drawing.new('Square')
-    watermarkCrust.Filled = false
-    watermarkCrust.Thickness = 1
-    watermarkCrust.Color = self._color_crust
-
-    local watermarkBorder = Drawing.new('Square')
-    watermarkBorder.Filled = false
-    watermarkBorder.Thickness = 1
-    watermarkBorder.Color = self._color_border
-
-    local watermarkText = Drawing.new('Text')
-    watermarkText.Text = name
-    watermarkText.Outline = true
-    watermarkText.Color = self._color_text
-
-    self._tree = {
-        ['_tabs'] = {},
-        ['_drawings'] = { crust, border, base, navbar, title, watermarkBase, watermarkCursor, watermarkCrust, watermarkBorder, watermarkText }
-    }
-
-    return self
+                elements.Outline.Position = targetPos - Vector2.new(1, 1)
+                elements.Background.Position = targetPos
+                elements.Bar.Position = targetPos
+                elements.Text.Position = targetPos + Vector2.new(10, 5)
+                
+                elements.Outline.Transparency = alpha * 0.6
+                elements.Background.Transparency = alpha
+                elements.Bar.Transparency = alpha
+                elements.Text.Transparency = alpha
+            end
+        end
+        
+        for i, v in ipairs(ActiveNotifications) do
+            if v.ID == id then table.remove(ActiveNotifications, i) break end
+        end
+        
+        elements.Outline:Remove()
+        elements.Background:Remove()
+        elements.Bar:Remove()
+        elements.Text:Remove()
+    end)
 end
 
-function UILib._GetTextBounds(str)
-    return #str * ESP_FONTSIZE, ESP_FONTSIZE
-end
-
-function UILib._IsMouseWithinBounds(origin, size)
-    local mousePos = getMousePos()
-    return mousePos.x >= origin.x and mousePos.x <= origin.x + size.x and mousePos.y >= origin.y and mousePos.y <= origin.y + size.y
-end
-
-function UILib:_RemoveDropdown()
-    if self._active_dropdown then
-        local dropdownDraws = self._active_dropdown['_drawings']
-
-        destroyAllDrawings(dropdownDraws)
-        self._active_dropdown = nil
-    end
-end
-
-function UILib:_RemoveColorpicker()
-    if self._active_colorpicker then
-        local colorpickerDraws = self._active_colorpicker['_drawings']
-
-        destroyAllDrawings(colorpickerDraws)
-        self._active_colorpicker = nil
-    end
-end
-
-function UILib:_SpawnDropdown(default, choices, multi, callback, position, width)
-    if self._active_dropdown then
-        self:_RemoveDropdown()
-    end
-
-    local base = Drawing.new('Square')
-    base.Filled = true
-    base.Color = self._color_surface
-
-    local crust = Drawing.new('Square')
-    crust.Filled = false
-    crust.Thickness = 1
-    crust.Color = self._color_crust
-
-    local border = Drawing.new('Square')
-    border.Filled = false
-    border.Thickness = 1
-    border.Color = self._color_border
-
-    local drawings = { base, crust, border }
-    for _, entryValue in ipairs(choices) do
-        local entry = Drawing.new('Text')
-        entry.Outline = true
-        entry.Color = self._color_text
-        entry.Text = entryValue
-
-        table.insert(drawings, entry)
-    end
-
-    -- convert to dictionary
-    local choiceHash = {}
-    for _, choice in ipairs(choices) do
-        choiceHash[choice] = false
-    end
-
-    for _, default_ in ipairs(default) do
-        choiceHash[default_] = true
-    end
-
-    self._active_dropdown = {
-        ['choices'] = choiceHash,
-        ['multi'] = multi,
-        ['callback'] = callback,
-        ['position'] = position,
-        ['w'] = width,
-        ['_drawings'] = drawings
-    }
-end
-
-function UILib:_SpawnColorpicker(default, colorLabel, callback)
-    if self._active_colorpicker then
-        self:_RemoveColorpicker()
-    end
-
-    -- base
-    local base = Drawing.new('Square')
-    base.Filled = true
-    base.Color = self._color_surface
-
-    local crust = Drawing.new('Square')
-    crust.Filled = false
-    crust.Thickness = 1
-    crust.Color = self._color_crust
-
-    local border = Drawing.new('Square')
-    border.Filled = false
-    border.Thickness = 1
-    border.Color = self._color_border
-
-    local titleBar = Drawing.new('Square')
-    titleBar.Filled = true
-    titleBar.Color = self._color_border
-
-    local label = Drawing.new('Text')
-    label.Outline = true
-    label.Color = self._color_text
-    label.Text = colorLabel
-
-    local preview = Drawing.new('Square')
-    preview.Filled = true
-    preview.Color = self._color_surface
-
-    local drawings = { base, crust, border, titleBar, label, preview }
-
-    -- gradients
-    for _ = 1, self._gradient_detail * 3 do
-        local segment = Drawing.new('Square')
-        segment.Filled = true
-
-        table.insert(drawings, segment)
-    end
-
-    -- cursors
-    local cursorCrustPrimary = Drawing.new('Circle')
-    cursorCrustPrimary.Filled = false
-    cursorCrustPrimary.Thickness = 3
-    cursorCrustPrimary.Radius = 6
-    cursorCrustPrimary.NumSides = 20
-    cursorCrustPrimary.Color = self._color_crust
-
-    local cursorBasePrimary = Drawing.new('Circle')
-    cursorBasePrimary.Filled = false
-    cursorBasePrimary.Thickness = 1
-    cursorBasePrimary.Radius = 6
-    cursorBasePrimary.NumSides = 20
-    cursorBasePrimary.Color = self._color_border
-
-    local cursorBaseSecondary = Drawing.new('Square')
-    cursorBaseSecondary.Filled = true
-    cursorBaseSecondary.Color = self._color_border
-
-    local cursorBorderSecondary = Drawing.new('Square')
-    cursorBorderSecondary.Filled = false
-    cursorBorderSecondary.Thickness = 1
-    cursorBorderSecondary.Color = self._color_surface
-
-    local cursorCrustSecondary = Drawing.new('Square')
-    cursorCrustSecondary.Filled = false
-    cursorCrustSecondary.Thickness = 1
-    cursorCrustSecondary.Color = self._color_crust
-
-    for _, cursor in ipairs{cursorBasePrimary, cursorCrustPrimary, cursorBaseSecondary, cursorCrustSecondary, cursorBorderSecondary} do
-        table.insert(drawings, cursor)
-    end
-
-    self._active_colorpicker = {
-        ['callback'] = callback,
-        ['_pallete_pos'] = nil,
-        ['_slider_y'] = 0,
-        ['_drawings'] = drawings
-    }
-end
-
-function UILib:ToggleWatermark(state)
-    self._watermark = state
-end
-
-function UILib:ToggleMenu(state)
-    self._open = state
-end
-
-function UILib:IsMenuOpen()
-    return self._open
-end
-
-function UILib:Tab(name)
-    local backdrop = Drawing.new('Square')
-    backdrop.Color = self._color_border
-    backdrop.Filled = true
-
-    local shadow = Drawing.new('Square')
-    shadow.Color = BLACK
-    shadow.Filled = true
-
-    local cursor = Drawing.new('Square')
-    cursor.Color = self._color_accent
-    cursor.Filled = true
-
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = name
-
-    table.insert(self._tree['_tabs'], {
-        ['name'] = name,
-        ['_sections'] = {},
-        ['_drawings'] = { backdrop, shadow, cursor, text }
+local KeybindList = {
+    CurrentTransparency = 0,
+    TargetHeight = 25,
+    CurrentHeight = 25,
+    Entries = {},
+    MainFrame = Draw("Square", {
+        Filled = true,
+        Color = themes.Default.Background,
+        Size = Vector2.new(150, 25),
+        Position = Vector2.new(20, 300),
+        Visible = false,
+        Corner = 4,
+        Transparency = 0,
+        ZIndex = 100
+    }),
+    Title = Draw("Text", {
+        Text = "Keybinds",
+        Size = 14,
+        Color = themes.Default.Accent,
+        Position = Vector2.new(25, 305),
+        Font = 2,
+        Visible = false,
+        Transparency = 0,
+        ZIndex = 101
     })
+}
 
-    if self._active_tab == nil then
-        self._active_tab = name
+KeybindList.Glow = createGlow(KeybindList.MainFrame, KeybindList.MainFrame.Size, KeybindList.MainFrame.Position, 4, 10, themes.Default.Accent)
+
+function Arcane:UpdateKeybindList()
+    local activeData = {}
+    for name, mode in pairs(ActiveKeybinds) do
+        table.insert(activeData, {Name = name, Mode = mode})
+    end
+    
+    local activeCount = #activeData
+    KeybindList.TargetHeight = 25 + (activeCount * 18) + (activeCount > 0 and 5 or 0)
+    
+    local alpha = KeybindList.CurrentTransparency
+    local shouldShow = alpha > 0.05
+
+    KeybindList.MainFrame.Visible = shouldShow
+    KeybindList.Title.Visible = shouldShow
+    KeybindList.MainFrame.Transparency = alpha
+    KeybindList.Title.Transparency = alpha
+    
+    KeybindList.CurrentHeight = lerp(KeybindList.CurrentHeight, KeybindList.TargetHeight, 0.15)
+    KeybindList.MainFrame.Size = Vector2.new(150, KeybindList.CurrentHeight)
+
+    for i, glow in ipairs(KeybindList.Glow) do
+        glow.Visible = shouldShow
+        glow.Transparency = (0.2 * (1 - (i / 10))) * alpha
+        glow.Size = KeybindList.MainFrame.Size + Vector2.new(i * 4, i * 4)
+        glow.Position = KeybindList.MainFrame.Position - Vector2.new(i * 2, i * 2)
     end
 
-    return name
-end
+    for i, entry in ipairs(KeybindList.Entries) do
+        local isEntryActive = i <= activeCount
+        entry.Text.Visible = shouldShow and isEntryActive
+        entry.Mode.Visible = shouldShow and isEntryActive
+        
+        if isEntryActive then
+            entry.CurrentAlpha = lerp(entry.CurrentAlpha, 1, 0.1)
+        else
+            entry.CurrentAlpha = lerp(entry.CurrentAlpha, 0, 0.1)
+        end
+        
+        entry.Text.Transparency = alpha * entry.CurrentAlpha
+        entry.Mode.Transparency = alpha * entry.CurrentAlpha
+    end
 
-function UILib:Section(tabName, name)
-    for _, tab in ipairs(self._tree['_tabs']) do
-        if tab['name'] == tabName then
-            local base = Drawing.new('Square')
-            base.Filled = true
-            base.Color = self._color_surface
+    if not shouldShow then return end
 
-            local crust = Drawing.new('Square')
-            crust.Filled = false
-            crust.Thickness = 1
-            crust.Color = self._color_crust
-
-            local border = Drawing.new('Square')
-            border.Filled = false
-            border.Thickness = 1
-            border.Color = self._color_overlay
-
-            local title = Drawing.new('Text')
-            title.Text = name
-            title.Outline = true
-            title.Color = self._color_text
-
-            local section = {
-                ['name'] = name,
-                ['_items'] = {},
-                ['_drawings'] = { base, crust, border, title }
+    local yOffset = 25
+    for i, data in ipairs(activeData) do
+        local entry = KeybindList.Entries[i]
+        if not entry then
+            entry = {
+                Text = Draw("Text", { Size = 13, Color = themes.Default.Text, Font = 2, Visible = false, ZIndex = 102 }),
+                Mode = Draw("Text", { Size = 13, Color = themes.Default.TextDark, Font = 2, Visible = false, ZIndex = 102 }),
+                CurrentAlpha = 0
             }
-
-            table.insert(tab._sections, section)
-            return name
+            KeybindList.Entries[i] = entry
         end
+
+        entry.Text.Text = data.Name
+        entry.Mode.Text = "[" .. data.Mode .. "]"
+        
+        entry.Text.Position = KeybindList.MainFrame.Position + Vector2.new(10, yOffset)
+        entry.Mode.Position = KeybindList.MainFrame.Position + Vector2.new(140 - entry.Mode.TextBounds.X, yOffset)
+        
+        yOffset = yOffset + 18
     end
 end
 
-function UILib:_AddToSection(tabName, sectionName, itemType, value, callback, drawings, meta)
-    for _, tab in pairs(self._tree._tabs) do
-        if tab.name == tabName then
-            for _, section in pairs(tab._sections) do
-                if section.name == sectionName then
-                    local item = {
-                        ['type'] = itemType,
-                        ['value'] = value,
-                        ['callback'] = callback,
-                        ['_drawings'] = drawings
-                    }
-
-                    if meta then
-                        for key, val in pairs(meta) do
-                            item[key] = val
-                        end
-                    end
-
-                    table.insert(section._items, item)
-                    return
-                end
-            end
-        end
+spawn(function()
+    while true do
+        local activeCount = 0
+        for _ in pairs(ActiveKeybinds) do activeCount = activeCount + 1 end
+        local target = (activeCount > 0 or Arcane.IsOpen) and 1 or 0
+        
+        KeybindList.CurrentTransparency = lerp(KeybindList.CurrentTransparency, target, 0.1)
+        Arcane:UpdateKeybindList()
+        wait(0.01)
     end
-end
+end)
 
-function UILib:Checkbox(tabName, sectionName, label, defaultValue, callback)
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Thickness = 1
-    outline.Filled = false
+function Arcane:CreateWindow(Title, Size, ThemeName)
+    local theme = themes[ThemeName] or themes.Default
+    local windowSize = Size or Vector2.new(650, 450)
+    local screenPos = Vector2.new(200, 200)
 
-    local check = Drawing.new('Square')
-    check.Color = self._color_accent
-    check.Filled = true
+    local main = Draw("Square", { Filled = true, Color = theme.Background, Size = windowSize, Position = screenPos, Corner = 12, Visible = true, ZIndex = 1 })
+    local sidebar = Draw("Square", { Filled = true, Color = Color3.fromRGB(12, 12, 12), Size = Vector2.new(150, windowSize.Y), Position = screenPos, Corner = 12, Visible = true, ZIndex = 2 })
+    local logo = Draw("Text", { Text = Title or "Arcane", Size = 24, Color = theme.Accent, Position = screenPos + Vector2.new(25, 20), Font = 2, Visible = true, ZIndex = 3 })
+    local globalSelector = Draw("Square", { Filled = true, Color = theme.Accent, Size = Vector2.new(3, 18), Position = screenPos + Vector2.new(0, 70), Visible = true, ZIndex = 5 })
 
-    local checkShadow = Drawing.new('Square')
-    checkShadow.Color = BLACK
-    checkShadow.Filled = true
+    local window = {
+        Main = main, Sidebar = sidebar, Logo = logo, GlobalSelector = globalSelector,
+        Pos = screenPos, Size = windowSize, Theme = theme, Sections = {}, CurrentTab = "",
+        SidebarItems = {}, SidebarLayoutY = 70, SidebarPadding = 6, TargetSelectorY = 70, CurrentSelectorY = 70,
+        TabSections = {}
+    }
 
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
+    window.Glow = createGlow(main, windowSize, screenPos, 12, 10, theme.Accent)
+    
+    Arcane.IsOpen = true
 
-    self:_AddToSection(tabName, sectionName, 'checkbox', defaultValue, callback, {
-        outline,
-        check,
-        checkShadow,
-        text
-    })
-end
-
-function UILib:Slider(tabName, sectionName, label, defaultValue, callback, min, max, step, appendix)
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Filled = true
-
-    local fill = Drawing.new('Square')
-    fill.Color = self._color_accent
-    fill.Filled = true
-
-    local fillShadow = Drawing.new('Square')
-    fillShadow.Color = BLACK
-    fillShadow.Filled = true
-
-    local value = Drawing.new('Text')
-    value.Color = self._color_text
-    value.Outline = true
-    value.Text = label
-
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
-
-    self:_AddToSection(tabName, sectionName, 'slider', defaultValue, callback, {
-        outline,
-        fill,
-        fillShadow,
-        value,
-        text
-    }, {
-        ['min'] = min,
-        ['max'] = max,
-        ['step'] = step,
-        ['appendix'] = appendix
-    })
-end
-
-function UILib:Choice(tabName, sectionName, label, defaultValue, callback, choices, multi)
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Thickness = 1
-    outline.Filled = false
-
-    local fill = Drawing.new('Square')
-    fill.Color = self._color_crust
-    fill.Filled = true
-
-    local values = Drawing.new('Text')
-    values.Color = self._color_text
-    values.Outline = true
-    values.Text = label
-
-    local expand = Drawing.new('Text')
-    expand.Color = self._color_text
-    expand.Outline = true
-    expand.Text = label
-
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
-
-    self:_AddToSection(tabName, sectionName, 'choice', defaultValue, callback, {
-        outline,
-        fill,
-        values,
-        expand,
-        text
-    }, {
-        ['choices'] = choices,
-        ['multi'] = multi
-    })
-end
-
-function UILib:Colorpicker(tabName, sectionName, label, defaultValue, callback)
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Thickness = 1
-    outline.Filled = false
-
-    local fill = Drawing.new('Square')
-    fill.Color = self._color_crust
-    fill.Filled = true
-
-    local shadow = Drawing.new('Square')
-    shadow.Color = BLACK
-    shadow.Filled = true
-
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
-
-    self:_AddToSection(tabName, sectionName, 'colorpicker', defaultValue, callback, {
-        outline,
-        fill,
-        shadow,
-        text
-    }, {
-        ['label'] = label
-    })
-end
-
-function UILib:Button(tabName, sectionName, label, callback)
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Thickness = 1
-    outline.Filled = false
-
-    local fill = Drawing.new('Square')
-    fill.Color = self._color_crust
-    fill.Filled = true
-
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
-
-    self:_AddToSection(tabName, sectionName, 'button', defaultValue, callback, {
-        outline,
-        fill,
-        text
-    }, {
-        ['label'] = label
-    })
-end
-
-function UILib:Keybind(tabName, sectionName, label, defaultValue, callback, mode)
-    local text = Drawing.new('Text')
-    text.Color = self._color_text
-    text.Outline = true
-    text.Text = label
-
-    local outline = Drawing.new('Square')
-    outline.Color = self._color_crust
-    outline.Thickness = 1
-    outline.Filled = false
-
-    local fill = Drawing.new('Square')
-    fill.Color = self._color_crust
-    fill.Filled = true
-
-    local key = Drawing.new('Text')
-    key.Color = self._color_text
-    key.Outline = true
-
-    self:_AddToSection(tabName, sectionName, 'key', defaultValue, callback, {
-        text,
-        outline,
-        fill,
-        key
-    }, {
-        ['mode'] = mode or 'Hold',
-        ['_listening'] = false,
-        ['_state'] = nil
-    })
-end
-
-function UILib:CreateSettingsTab(customName)
-    local menuTab = self:Tab(customName or 'Menu')
-    local menuSettings = self:Section(menuTab, 'Settings')
-    self:Keybind(menuTab, menuSettings, 'Open key', 'f1', function (state)
-        self:ToggleMenu(state)
-    end, 'Toggle')
-    self:Checkbox(menuTab, menuSettings, 'Watermark', true, function (state)
-        self:ToggleWatermark(state)
-    end)
-    self:Checkbox(menuTab, menuSettings, 'Debug', false, nil)
-
-    local menuTheme = self:Section(menuTab, 'Theming')
-    local presetThemes = {'Arcane Default', 'X11', 'Nord', 'Dracula', 'Catppuccin'}
-    self:Choice(menuTab, menuTheme, 'Preset theme', {presetThemes[1]}, function (values)
-        local themingItems = self._tree._tabs[#self._tree._tabs]._sections[2]
-        local colorAccent = themingItems._items[2]
-        local colorBase = themingItems._items[3]
-        local colorInnerStroke = themingItems._items[4]
-        local colorOuterStroke = themingItems._items[5]
-        local colorCrust = themingItems._items[6]
-
-        local theme = values[1]
-        if theme == presetThemes[1] then
-            colorAccent.value = {170, 85, 255}
-            colorBase.value = {40, 20, 60}
-            colorInnerStroke.value = {30, 15, 45}
-            colorOuterStroke.value = {70, 40, 100}
-            colorCrust.value = {10, 5, 15}
-        elseif theme == presetThemes[2] then
-            colorAccent.value = {255, 128, 0}
-            colorBase.value = {38, 38, 38}
-            colorInnerStroke.value = {26, 26, 26}
-            colorOuterStroke.value = {77, 77, 77}
-            colorCrust.value = {0, 0, 0}
-        elseif theme == presetThemes[3] then
-            colorAccent.value = {135, 206, 235}
-            colorBase.value = {49, 54, 60}
-            colorInnerStroke.value = {72, 80, 90}
-            colorOuterStroke.value = {61, 66, 73}
-            colorCrust.value = {88, 96, 106}
-        elseif theme == presetThemes[4] then
-            colorAccent.value = {243, 67, 54}
-            colorBase.value = {40, 44, 59}
-            colorInnerStroke.value = {64, 71, 89}
-            colorOuterStroke.value = {29, 31, 45}
-            colorCrust.value = {72, 73, 95}
-        elseif theme == presetThemes[5] then
-            colorAccent.value = {240, 160, 200}
-            colorBase.value = {48, 47, 63}
-            colorInnerStroke.value = {72, 71, 89}
-            colorOuterStroke.value = {63, 62, 80}
-            colorCrust.value = {33, 32, 44}
-        end
-
-        colorAccent.callback(Color3.fromRGB(unpack(colorAccent.value)))
-        colorBase.callback(Color3.fromRGB(unpack(colorBase.value)))
-        colorInnerStroke.callback(Color3.fromRGB(unpack(colorInnerStroke.value)))
-        colorOuterStroke.callback(Color3.fromRGB(unpack(colorOuterStroke.value)))
-        colorCrust.callback(Color3.fromRGB(unpack(colorCrust.value)))
-    end, presetThemes, false)
-
-    self:Colorpicker(menuTab, menuTheme, 'Accent', {170, 85, 255}, function (newColor)
-        self._color_accent = newColor
-    end)
-    self:Colorpicker(menuTab, menuTheme, 'Base', {40, 20, 60}, function (newColor)
-        self._color_surface = newColor
-    end)
-    self:Colorpicker(menuTab, menuTheme, 'Inner stroke', {30, 15, 45}, function (newColor)
-        self._color_border = newColor
-    end)
-    self:Colorpicker(menuTab, menuTheme, 'Outer stroke', {70, 40, 100}, function (newColor)
-        self._color_overlay = newColor
-    end)
-    self:Colorpicker(menuTab, menuTheme, 'Crust', {10, 5, 15}, function (newColor)
-        self._color_crust = newColor
-    end)
-
-    self:Button(menuTab, menuSettings, 'Unload', function()
-        self:Destroy()
-    end)
-
-    return menuTab, menuSettings, menuTheme
-end
-
-
-function UILib:Step()
-    -- our input stuff
-    local deltaTime = math.max(os.clock() - self._tick, 0.0035)
-    local mousePos = getMousePos()
-
-    for keycode, inputData in pairs(self._inputs) do
-        local keycodeId = inputData['id']
-        local interacted = iskeypressed(keycodeId)
-        if isrbxactive() and interacted then
-            if inputData['held'] == false and inputData['click'] == false then
-                self._inputs[keycode]['click'] = true
-            else
-                self._inputs[keycode]['click'] = false
-            end
-
-            self._inputs[keycode]['held'] = true
-        else
-            self._inputs[keycode]['held'] = false
-        end
-    end
-    local menuOpen = self._open
-    local clickFrame = menuOpen and self._inputs['m1'].click
-    local ctxFrame = menuOpen and self._inputs['m2'].click
-    local m1Held = menuOpen and self._inputs['m1'].held
-
-    local baseOpacity = self._base_opacity
-    local childrenVisible = baseOpacity > 0.22
-    self._base_opacity = clamp(lerp(baseOpacity, menuOpen == true and 1 or 0, deltaTime * 11), 0, 1)
-
-    setrobloxinput(not menuOpen)
-
-    -- draw watermark
-    local watermarkBase = self._tree['_drawings'][6]
-    local watermarkCursor = self._tree['_drawings'][7]
-    local watermarkCrust = self._tree['_drawings'][8]
-    local watermarkBorder = self._tree['_drawings'][9]
-    local watermarkTitle = self._tree['_drawings'][10]
-
-    if self._watermark then
-        local watermarkStates = {self.identity}
-        local watermarkActivity = self._watermark_activity
-        if watermarkActivity then
-            for _, activity in ipairs(watermarkActivity) do
-                if type(activity) == 'function' then
-                    local activityString = activity()
-                    if activityString ~= nil and #activityString > 0 then
-                        table.insert(watermarkStates, activityString)
-                    end
-                end
-            end
-        end
-
-        local watermarkText = table.concat(watermarkStates, ' | ')
-        local watermarkW, watermarkH = self._GetTextBounds(watermarkText)
-        local watermarkPosition = Vector2.new(20, 20)
-        local watermarkSize = Vector2.new(watermarkW + self._padding * 3, watermarkH + self._padding * 3)
-
-        watermarkBase.Position = watermarkPosition
-        watermarkBase.Size = watermarkSize
-        watermarkBase.Visible = true
-        watermarkBase.Color = self._color_surface
-
-        watermarkCrust.Position = watermarkPosition
-        watermarkCrust.Size = watermarkSize
-        watermarkCrust.Visible = true
-        watermarkCrust.Color = self._color_crust
-
-        watermarkBorder.Position = watermarkPosition + Vector2.new(1, 1)
-        watermarkBorder.Size = watermarkSize + Vector2.new(-2, -2)
-        watermarkBorder.Visible = true
-        watermarkBorder.Color = self._color_border
-
-        watermarkCursor.Position = watermarkPosition + Vector2.new(2, 2)
-        watermarkCursor.Size = Vector2.new(watermarkSize.x - 4, 1)
-        watermarkCursor.Visible = true
-        watermarkCursor.Color = self._color_accent
-
-        watermarkTitle.Position = watermarkPosition + Vector2.new(2 + self._padding, 2 + self._padding)
-        watermarkTitle.Text = watermarkText
-        watermarkTitle.Visible = true
-        watermarkTitle.Color = self._color_text
-    else
-        watermarkBase.Visible = false
-        watermarkCrust.Visible = false
-        watermarkBorder.Visible = false
-        watermarkCursor.Visible = false
-        watermarkTitle.Visible = false
+    function window:SetVisible(state)
+        Arcane.IsOpen = state
+        self.Main.Visible = state
+        self.Sidebar.Visible = state
+        self.Logo.Visible = state
+        self.GlobalSelector.Visible = state
+        for _, glow in ipairs(self.Glow) do glow.Visible = state end
+        for _, item in ipairs(self.SidebarItems) do if item.Text then item.Text.Visible = state end end
+        self:UpdateVisibility()
     end
 
-    -- draw colorpicker
-    if self._active_colorpicker then
-        local colorpickerDraws = self._active_colorpicker['_drawings']
-        local colorpickerBase = colorpickerDraws[1]
-        local colorpickerCrust = colorpickerDraws[2]
-        local colorpickerBorder = colorpickerDraws[3]
-        local colorpickerTitleBar = colorpickerDraws[4]
-        local colorpickerLabel = colorpickerDraws[5]
-        local colorpickerPreview = colorpickerDraws[6]
-
-        colorpickerPreview.Visible = false
-
-        local colorpickerPosition = Vector2.new(self.x + self.w + self._padding * 2, self.y)
-        local colorpickerSize = Vector2.new(200, 170 + self._title_h)
-
-        colorpickerBase.Position = colorpickerPosition
-        colorpickerBase.Size = colorpickerSize
-        colorpickerBase.Transparency = baseOpacity
-        colorpickerBase.Visible = childrenVisible
-        colorpickerBase.Color = self._color_surface
-
-        colorpickerCrust.Position = colorpickerPosition
-        colorpickerCrust.Size = colorpickerSize
-        colorpickerCrust.Transparency = baseOpacity
-        colorpickerCrust.Visible = childrenVisible
-        colorpickerCrust.Color = self._color_crust
-
-        colorpickerBorder.Position = colorpickerPosition + Vector2.new(1, 1)
-        colorpickerBorder.Size = colorpickerSize - Vector2.new(2, 2)
-        colorpickerBorder.Transparency = baseOpacity
-        colorpickerBorder.Visible = childrenVisible
-        colorpickerBorder.Color = self._color_border
-
-        colorpickerTitleBar.Position = colorpickerPosition + Vector2.new(1, 1)
-        colorpickerTitleBar.Size = Vector2.new(colorpickerSize.x - 2, self._title_h - 3)
-        colorpickerTitleBar.Transparency = baseOpacity
-        colorpickerTitleBar.Visible = childrenVisible
-        colorpickerTitleBar.Color = self._color_border
-
-        colorpickerLabel.Position = colorpickerPosition + Vector2.new(self._padding, self._padding)
-        colorpickerLabel.Transparency = baseOpacity
-        colorpickerLabel.Visible = childrenVisible
-        colorpickerLabel.Color = self._color_text
-
-        local palletePosition = colorpickerPosition + Vector2.new(self._padding, self._title_h + self._padding)
-        local palleteSize = colorpickerSize.y - self._title_h - self._padding * 2
-
-        for i = 1, self._gradient_detail do
-            local segment = colorpickerDraws[6 + i]
-            local step = 1 - (i - 1) / (self._gradient_detail - 1)
-            segment.Size = Vector2.new(palleteSize * step, palleteSize)
-            segment.Position = palletePosition
-            local h = clamp((self._active_colorpicker['_slider_y']) / palleteSize, 0, 1)
-            segment.Color = Color3.fromHSV(h, step, 1)
-            segment.Transparency = baseOpacity
-            segment.Visible = childrenVisible
+    function window:Move(delta)
+        self.Pos = self.Pos + delta
+        self.Main.Position = self.Main.Position + delta
+        self.Sidebar.Position = self.Sidebar.Position + delta
+        self.Logo.Position = self.Logo.Position + delta
+        self.GlobalSelector.Position = self.GlobalSelector.Position + delta
+        for i, glow in ipairs(self.Glow) do
+            glow.Position = self.Main.Position - Vector2.new(i * 2, i * 2)
         end
-
-        for i = 1, self._gradient_detail do
-            local segment = colorpickerDraws[6 + self._gradient_detail + i]
-            local step = 1 - i / self._gradient_detail
-            segment.Size = Vector2.new(palleteSize, palleteSize * step)
-            segment.Position = palletePosition + Vector2.new(0, palleteSize * (1 - step))
-            segment.Color = BLACK
-            segment.Transparency = baseOpacity * 1 / (self._gradient_detail / 3)
-            segment.Visible = childrenVisible
-        end
-
-        local hueSliderWidth = colorpickerSize.x - palleteSize - self._padding * 4
-        local hueSliderPos = palletePosition + Vector2.new(colorpickerSize.x - hueSliderWidth - self._padding * 2.5, 0)
-        for i = 1, self._gradient_detail do
-            local segment = colorpickerDraws[6 + self._gradient_detail * 2 + i]
-            local step = 1 - (i - 1) / self._gradient_detail
-            segment.Size = Vector2.new(hueSliderWidth, palleteSize * step)
-            segment.Position = hueSliderPos
-            segment.Color = Color3.fromHSV(step, 1, 1)
-            segment.Transparency = baseOpacity
-            segment.Visible = childrenVisible
-        end
-
-        local drawsOffset = 6 + self._gradient_detail * 3
-        local colorpickerCursorBasePrimary = colorpickerDraws[drawsOffset + 1]
-        local colorpickerCursorCrustPrimary = colorpickerDraws[drawsOffset + 2]
-        local colorpickerCursorBaseSecondary = colorpickerDraws[drawsOffset + 3]
-        local colorpickerCursorCrustSecondary = colorpickerDraws[drawsOffset + 4]
-        local colorpickerCursorBorderSecondary = colorpickerDraws[drawsOffset + 5]
-
-        if m1Held then
-            if self._IsMouseWithinBounds(palletePosition, Vector2.new(palleteSize, palleteSize)) then
-                self._active_colorpicker['_pallete_pos'] = mousePos
-            elseif self._IsMouseWithinBounds(hueSliderPos, Vector2.new(hueSliderWidth, palleteSize)) then
-                self._active_colorpicker['_slider_y'] = mousePos.y - palletePosition.y
-            end
-        end
-
-        local palletePos = self._active_colorpicker['_pallete_pos'] or palletePosition
-        local sliderPos = hueSliderPos + Vector2.new(-2, self._active_colorpicker['_slider_y'])
-
-        local relPalletePos = Vector2.new(
-            clamp((palletePos.x - palletePosition.x) / palleteSize, 0, 1),
-            clamp((palletePos.y - palletePosition.y) / palleteSize, 0, 1)
-        )
-        local relSliderPos = clamp((self._active_colorpicker['_slider_y']) / palleteSize, 0, 1)
-
-        local h = relSliderPos
-        local s = relPalletePos.x
-        local v = 1 - relPalletePos.y
-        local newColor = color3fromHSV(h, s, v)
-
-        if m1Held then
-            if self._active_colorpicker['callback'] then
-                self._active_colorpicker['callback'](newColor)
-            end
-        end
-
-        colorpickerCursorBasePrimary.Position = palletePos
-        colorpickerCursorBasePrimary.Color = self._color_text
-        colorpickerCursorBasePrimary.Visible = childrenVisible
-
-        colorpickerCursorCrustPrimary.Position = palletePos
-        colorpickerCursorCrustPrimary.Color = self._color_crust
-        colorpickerCursorCrustPrimary.Visible = childrenVisible
-
-        local sliderCursorSize = Vector2.new(hueSliderWidth + 4, 4)
-        colorpickerCursorBaseSecondary.Size = sliderCursorSize
-        colorpickerCursorBaseSecondary.Position = sliderPos
-        colorpickerCursorBaseSecondary.Color = self._color_surface
-        colorpickerCursorBaseSecondary.Visible = childrenVisible
-
-        colorpickerCursorCrustSecondary.Size = sliderCursorSize
-        colorpickerCursorCrustSecondary.Position = sliderPos
-        colorpickerCursorCrustSecondary.Color = self._color_crust
-        colorpickerCursorCrustSecondary.Visible = childrenVisible
-
-        colorpickerCursorBorderSecondary.Size = sliderCursorSize + Vector2.new(-2, -2)
-        colorpickerCursorBorderSecondary.Position = sliderPos + Vector2.new(1, 1)
-        colorpickerCursorBorderSecondary.Color = self._color_border
-        colorpickerCursorBorderSecondary.Visible = childrenVisible
-
-        if clickFrame and not self._IsMouseWithinBounds(colorpickerPosition, colorpickerSize) then
-            self:_RemoveColorpicker()
-        end
-
-        clickFrame = false
+        for _, item in ipairs(self.SidebarItems) do item:_Move(delta) end
+        self:RelayoutTab(self.CurrentTab)
     end
 
-    -- draw dropdown
-    if self._active_dropdown then
-        local dropdownChoices = self._active_dropdown['choices']
-        local dropdownIsMulti = self._active_dropdown['multi']
-        local dropdownCallback = self._active_dropdown['callback']
-        local dropdownPosition = self._active_dropdown['position']
-        local dropdownWidth = self._active_dropdown['w']
-        local dropdownDraws = self._active_dropdown['_drawings']
-
-        local dropdownBase = dropdownDraws[1]
-        local dropdownCrust = dropdownDraws[2]
-        local dropdownBorder = dropdownDraws[3]
-
-        local totalDropdownY = self._padding
-        local dropdownCancel = clickFrame
-        local i = 1
-        for choice, choiceValue in pairs(dropdownChoices) do
-            local _choiceW, choiceH = self._GetTextBounds(choice)
-            local choiceDraw = dropdownDraws[3 + i]
-
-            local choicePos = dropdownPosition + Vector2.new(self._padding, totalDropdownY)
-            local choiceSize = Vector2.new(dropdownWidth, choiceH + self._padding)
-
-            choiceDraw.Position = choicePos
-            choiceDraw.Color = choiceValue and self._color_accent or self._color_text
-            choiceDraw.Text = choice
-            choiceDraw.Visible = childrenVisible
-
-            if clickFrame and self._IsMouseWithinBounds(choicePos, choiceSize) then
-                dropdownCancel = not dropdownIsMulti
-                
-                if not dropdownIsMulti then
-                    for choiceName, _ in pairs(dropdownChoices) do
-                        dropdownChoices[choiceName] = false
-                    end
-                end
-
-                dropdownChoices[choice] = not choiceValue
-                if dropdownCallback then
-                    local returnedValue = {}
-                    for choiceName, choiceValue in pairs(dropdownChoices) do
-                        if choiceValue == true then
-                            table.insert(returnedValue, choiceName)
-                        end
-                    end
-
-                    dropdownCallback(returnedValue)
-                end
-            end
-
-            totalDropdownY = totalDropdownY + choiceH * 2 + self._padding
-            i = i + 1
-        end
-
-        if dropdownCancel then
-            self:_RemoveDropdown()
-        else
-            dropdownBase.Position = dropdownPosition
-            dropdownBase.Size = Vector2.new(dropdownWidth, totalDropdownY)
-            dropdownBase.Transparency = baseOpacity
-            dropdownBase.Visible = childrenVisible
-            dropdownBase.Color = self._color_surface
-
-            dropdownCrust.Position = dropdownPosition
-            dropdownCrust.Size = Vector2.new(dropdownWidth, totalDropdownY)
-            dropdownCrust.Transparency = baseOpacity
-            dropdownCrust.Visible = childrenVisible
-            dropdownCrust.Color = self._color_crust
-
-            dropdownBorder.Position = dropdownPosition + Vector2.new(1, 1)
-            dropdownBorder.Size = Vector2.new(dropdownWidth - 2, totalDropdownY - 2)
-            dropdownBorder.Transparency = baseOpacity
-            dropdownBorder.Visible = childrenVisible
-            dropdownBorder.Color = self._color_border
-        end
-
-        clickFrame = false
+    function window:CreateTabSection(text)
+        local y = self.SidebarLayoutY
+        self.SidebarLayoutY = self.SidebarLayoutY + 24
+        local label = Draw("Text", { Text = text, Size = 13, Color = Color3.fromRGB(255, 255, 255), Position = self.Pos + Vector2.new(25, y), Font = 2, Visible = true, ZIndex = 4 })
+        local tabSection = { Text = label, _Move = function(_, d) label.Position = label.Position + d end }
+        Insert(self.SidebarItems, tabSection)
+        self.TabSections[text] = tabSection
+        return tabSection
     end
 
-    -- draw menu base
-    local uiCrust = self._tree['_drawings'][1]
-    local uiBorder = self._tree['_drawings'][2]
-    local uiBase = self._tree['_drawings'][3]
-    local uiNavbar = self._tree['_drawings'][4]
-    local uiTitle = self._tree['_drawings'][5]
-
-    uiBase.Position = Vector2.new(self.x, self.y)
-    uiBase.Size = Vector2.new(self.w, self.h)
-    uiBase.Transparency = baseOpacity
-    uiBase.Visible = childrenVisible
-    uiBase.Color = self._color_surface
-
-    uiBorder.Position = Vector2.new(self.x + 1, self.y + 1)
-    uiBorder.Size = Vector2.new(self.w - 2, self.h - 2)
-    uiBorder.Transparency = baseOpacity
-    uiBorder.Visible = childrenVisible
-    uiBorder.Color = self._color_border
-
-    uiCrust.Position = Vector2.new(self.x, self.y)
-    uiCrust.Size = Vector2.new(self.w, self.h)
-    uiCrust.Transparency = baseOpacity
-    uiCrust.Visible = childrenVisible
-    uiCrust.Color = self._color_crust
-
-    uiNavbar.Position = Vector2.new(self.x + 2, self.y + 2)
-    uiNavbar.Size = Vector2.new(self.w - 4, self._title_h - 4)
-    uiNavbar.Transparency = baseOpacity
-    uiNavbar.Visible = childrenVisible
-    uiNavbar.Color = self._color_border
-
-    local _titleW, titleH = self._GetTextBounds('')
-    uiTitle.Position = Vector2.new(self.x + 7, self.y + self._title_h / 2 - titleH + 2)
-    uiTitle.Transparency = baseOpacity
-    uiTitle.Visible = childrenVisible
-    uiTitle.Color = self._color_text
-
-    -- input handling for menu dragging
-    local titleOrigin = Vector2.new(self.x, self.y)
-    local titleSize = Vector2.new(self.w, self._title_h)
-
-    if self._IsMouseWithinBounds(titleOrigin, titleSize) then
-        if clickFrame then
-            self._dragging = true
-            self._drag_offset = mousePos - titleOrigin
-        end
+    function window:CreateTab(Name)
+        local height = 30
+        local y = self.SidebarLayoutY
+        self.SidebarLayoutY = self.SidebarLayoutY + height + self.SidebarPadding
+        local pos = self.Pos + Vector2.new(0, y)
+        local text = Draw("Text", { Text = Name, Size = 14, Color = theme.TextDark, Position = pos + Vector2.new(35, 6), Font = 2, Visible = true, ZIndex = 4 })
+        local tab = { Name = Name, Position = pos, Size = Vector2.new(150, height), Text = text, RelativeY = y + 6 }
+        function tab:_Move(d) self.Position = self.Position + d; self.Text.Position = self.Text.Position + d end
+        Insert(self.SidebarItems, tab)
+        Insert(tabs, tab)
+        if self.CurrentTab == "" then self.CurrentTab = Name; text.Color = theme.Text; self.TargetSelectorY = tab.RelativeY; self.CurrentSelectorY = tab.RelativeY end
+        return tab
     end
 
-    if self._dragging then
-        if m1Held then
-            self.x = mousePos.x - self._drag_offset.x
-            self.y = mousePos.y - self._drag_offset.y
-        else
-            self._dragging = false
-        end
-
-        clickFrame = false
-    end
-
-    -- draw tabs
-    local numTabs = #self._tree['_tabs']
-    for tabIndex, tab in ipairs(self._tree['_tabs']) do
-        local tabName = tab['name']
-        local tabDraws = tab['_drawings']
-        local tabOpen = self._active_tab == tabName
-
-        local tabBackdrop = tabDraws[1]
-        local tabShadow = tabDraws[2]
-        local tabCursor = tabDraws[3]
-        local tabText = tabDraws[4]
-
-        local tabW = (self.w - self._padding * 2 - (numTabs - 1) * 2) / numTabs
-        local tabH = self._tab_h
-
-        local tabPosition = Vector2.new(self.x + self._padding + (tabIndex - 1) * (tabW + 2), self.y + self._title_h + self._padding)
-        local tabSize = Vector2.new(tabW, tabH)
-
-        tabBackdrop.Position = tabPosition
-        tabBackdrop.Size = tabSize
-        tabBackdrop.Transparency = baseOpacity
-        tabBackdrop.Visible = childrenVisible
-        tabBackdrop.Color = self._color_border
-
-        tabShadow.Position = tabPosition + Vector2.new(0, tabH - 8)
-        tabShadow.Size = Vector2.new(tabW, 8)
-        tabShadow.Transparency = 0.05 * baseOpacity
-        tabShadow.Visible = childrenVisible
-
-        tabCursor.Position = tabPosition
-        tabCursor.Size = Vector2.new(tabW, 1)
-        tabCursor.Transparency = baseOpacity
-        tabCursor.Visible = tabOpen and childrenVisible
-        tabCursor.Color = self._color_accent
-
-        tabText.Position = tabPosition + Vector2.new(4, tabH / 2 - ESP_FONTSIZE / 2)
-        tabText.Transparency = baseOpacity
-        tabText.Visible = childrenVisible
-        tabText.Color = self._color_text
-
-        -- input handling for tabs
-        if clickFrame and self._IsMouseWithinBounds(tabPosition, tabSize) then
-            self._active_tab = tabName
-        end
-
-        -- draw sections
-        local totalSectionH_0 = self._padding
-        local totalSectionH_1 = self._padding
-        for sectionIndex, section in ipairs(tab['_sections']) do
-            local sectionDraws = section['_drawings']
-            local sectionItems = section['_items']
-
-            -- keybind processing
-            for _, keybind in ipairs(sectionItems) do
-                local itemType = keybind['type']
-                local itemValue = keybind['value']
-                local itemCallback = keybind['callback']
-
-                if itemType == 'key' then
-                    if itemValue and itemValue ~= 'unbound' and itemCallback then
-                        local keyMode = keybind['mode']
-                        local keyState = keybind['state']
-                        if keyMode == 'Hold' then
-                            keyState = self._inputs[itemValue]['held']
-                        elseif keyMode == 'Toggle' and self._inputs[itemValue]['click'] then
-                            keyState = not keyState
-                        elseif keyMode == 'Always' then
-                            keyState = true
-                        end
-
-                        if keyState ~= keybind['state'] then
-                            itemCallback(keyState)
-
-                            keybind['state'] = keyState
-                        end
-                    end
-                end
-            end
-
-            if tabOpen then
-                local sectionY = self._padding * 2
-                local opposite = (sectionIndex+1) % 2
-
-                local sectionW = self.w / 2 - self._padding * 1.5
-                local sectionPos = Vector2.new(
-                    self.x + self._padding + self._padding * opposite + sectionW * opposite,
-                    self.y + self._title_h + self._tab_h + self._padding * 2 + (opposite==1 and totalSectionH_0 or totalSectionH_1)
-                )
-
-                -- draw items
-                for _, sectionItem in ipairs(sectionItems) do
-                    local itemType = sectionItem['type']
-                    local itemDraws = sectionItem['_drawings']
-                    local itemValue = sectionItem['value']
-                    local itemCallback = sectionItem['callback']
-
-                    local itemPosition = sectionPos + Vector2.new(10, sectionY)
-
-                    if itemType == 'checkbox' then
-                        local checkboxOutline = itemDraws[1]
-                        local checkboxCheck = itemDraws[2]
-                        local checkboxShadow = itemDraws[3]
-                        local checkboxLabel = itemDraws[4]
-
-                        local boxSize = Vector2.new(14, 14)
-                        checkboxOutline.Position = itemPosition
-                        checkboxOutline.Size = boxSize
-                        checkboxOutline.Transparency = baseOpacity
-                        checkboxOutline.Visible = childrenVisible
-
-                        checkboxCheck.Position = itemPosition + Vector2.new(1, 1)
-                        checkboxCheck.Size = boxSize - Vector2.new(2, 2)
-                        checkboxCheck.Transparency = baseOpacity
-                        checkboxCheck.Visible = itemValue == true and childrenVisible
-                        checkboxCheck.Color = self._color_accent
-
-                        checkboxShadow.Position = itemPosition + Vector2.new(1, boxSize.y - 2)
-                        checkboxShadow.Size = Vector2.new(boxSize.x - 2, 1)
-                        checkboxShadow.Transparency = 0.3 * baseOpacity
-                        checkboxShadow.Visible = itemValue == true and childrenVisible
-                        checkboxShadow.Color = self._color_border
-
-                        checkboxLabel.Position = itemPosition + Vector2.new(boxSize.x + 8, 0)
-                        checkboxLabel.Transparency = baseOpacity
-                        checkboxLabel.Visible = childrenVisible
-                        checkboxLabel.Color = self._color_text
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(itemPosition, boxSize) then
-                            checkboxOutline.Color = self._color_accent
-
-                            if clickFrame then
-                                sectionItem['value'] = not sectionItem['value']
-
-                                if itemCallback then
-                                    itemCallback(sectionItem['value'])
-                                end
-                            end
-                        else
-                            checkboxOutline.Color = self._color_crust
-                        end
-
-                        sectionY = sectionY + boxSize.y + 8
-                    elseif itemType == 'slider' then
-                        local sliderOutline = itemDraws[1]
-                        local sliderFill = itemDraws[2]
-                        local sliderFillShadow = itemDraws[3]
-                        local sliderValue = itemDraws[4]
-                        local sliderLabel = itemDraws[5]
-
-                        local min = sectionItem['min']
-                        local max = sectionItem['max']
-                        local step = sectionItem['step']
-                        local appendix = sectionItem['appendix']
-
-                        local sliderW = sectionW - self._padding * 3
-                        local sliderH = 20
-                        local sliderBoxSize = Vector2.new(sliderW, sliderH)
-
-                        local _labelW, labelH = self._GetTextBounds('')
-                        sliderLabel.Position = itemPosition
-                        sliderLabel.Transparency = baseOpacity
-                        sliderLabel.Visible = childrenVisible
-                        sliderLabel.Color = self._color_text
-
-                        sliderOutline.Position = itemPosition + Vector2.new(0, labelH + 10)
-                        sliderOutline.Size = sliderBoxSize
-                        sliderOutline.Transparency = baseOpacity
-                        sliderOutline.Visible = childrenVisible
-                        sliderOutline.Color = self._color_crust
-
-                        local fillVisible = itemValue ~= min and childrenVisible
-                        local fillPercent = (itemValue - (sectionItem.min or 0)) / ((sectionItem.max or 1) - (sectionItem.min or 0))
-                        fillPercent = clamp(fillPercent, 0, 1)
-                        sliderFill.Position = itemPosition + Vector2.new(1, labelH + 11)
-                        sliderFill.Size = Vector2.new(math.max(sliderW * fillPercent - 2, 0), sliderH - 2)
-                        sliderFill.Transparency = baseOpacity
-                        sliderFill.Visible = fillVisible
-                        sliderFill.Color = self._color_accent
-                        
-                        sliderFillShadow.Position = itemPosition + Vector2.new(1, labelH + sliderH + 7)
-                        sliderFillShadow.Size = Vector2.new(math.max(sliderW * fillPercent - 2, 0), 2)
-                        sliderFillShadow.Transparency = 0.15 * baseOpacity
-                        sliderFillShadow.Visible = fillVisible
-
-                        local displayedValue = tostring(itemValue) .. (appendix or '')
-                        local sliderValueW, sliderValueH = self._GetTextBounds(displayedValue)
-                        sliderValue.Position = itemPosition + Vector2.new(sliderW - sliderValueW - 6, sliderValueH / 2 + sliderH - 2)
-                        sliderValue.Text = displayedValue
-                        sliderValue.Transparency = baseOpacity
-                        sliderValue.Visible = childrenVisible
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(itemPosition + Vector2.new(0, labelH + 10), sliderBoxSize) then
-                            sliderValue.Color = self._color_accent
-
-                            if m1Held then
-                                local mouseX = mousePos.x - itemPosition.x
-                                local percent = mouseX / sliderW
-                                percent = clamp(percent, 0, 1)
-
-                                local newValue = min + (max - min) * percent
-                                newValue = math.floor((newValue / step) + 0.5) * step
-
-                                newValue = math.max(min, math.min(max, newValue))
-                                if newValue ~= sectionItem['value'] then
-                                    sectionItem['value'] = newValue
-
-                                    if itemCallback then
-                                        itemCallback(newValue)
-                                    end
-                                end
-                            end
-                        else
-                            sliderValue.Color = self._color_text
-                        end
-
-                        sectionY = sectionY + sliderH + 18 + labelH
-                    elseif itemType == 'choice' then
-                        local choiceOutline = itemDraws[1]
-                        local choiceFill = itemDraws[2]
-                        local choiceValues = itemDraws[3]
-                        local choiceExpand = itemDraws[4]
-                        local choiceLabel = itemDraws[5]
-
-                        local choices = sectionItem['choices']
-                        local multi = sectionItem['multi']
-
-                        local _labelW, labelH = self._GetTextBounds('')
-                        local choiceW = sectionW - self._padding * 3
-                        local choiceH = 20
-                        local choiceBoxSize = Vector2.new(choiceW, choiceH)
-                        local choiceBoxPosition = itemPosition + Vector2.new(0, labelH + 10)
-
-                        choiceLabel.Position = itemPosition
-                        choiceLabel.Transparency = baseOpacity
-                        choiceLabel.Visible = childrenVisible
-                        choiceLabel.Color = self._color_text
-
-                        local valuesText = table.concat(itemValue, ', ')
-                        local valuesTextW, _valuesTextH = self._GetTextBounds(valuesText)
-                        choiceValues.Position = itemPosition + Vector2.new(4, labelH / 2 + choiceH - 2)
-                        choiceValues.Text = valuesTextW > choiceW - 32 and '...' or valuesText
-                        choiceValues.Transparency = baseOpacity
-                        choiceValues.Visible = childrenVisible
-                        choiceValues.Color = self._color_text
-
-                        choiceOutline.Position = choiceBoxPosition
-                        choiceOutline.Size = choiceBoxSize
-                        choiceOutline.Transparency = baseOpacity
-                        choiceOutline.Visible = childrenVisible
-
-                        choiceFill.Position = choiceBoxPosition + Vector2.new(2, 2)
-                        choiceFill.Size = choiceBoxSize - Vector2.new(4, 4)
-                        choiceFill.Transparency = baseOpacity
-                        choiceFill.Visible = childrenVisible
-                        choiceFill.Color = self._color_crust
-
-                        local expandSymbol = '<'
-                        local choiceExpandW, choiceExpandH = self._GetTextBounds(expandSymbol)
-                        choiceExpand.Position = itemPosition + Vector2.new(choiceW - choiceExpandW - 4, choiceExpandH / 2 + choiceH - 2)
-                        choiceExpand.Text = expandSymbol
-                        choiceExpand.Transparency = baseOpacity
-                        choiceExpand.Visible = childrenVisible
-                        choiceExpand.Color = self._color_text
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(choiceBoxPosition, choiceBoxSize) then
-                            choiceOutline.Color = self._color_accent
-
-                            if clickFrame then
-                                local dropdownCallback = function(newValues)
-                                    sectionItem['value'] = newValues
-
-                                    if itemCallback then
-                                        itemCallback(sectionItem['value'])
-                                    end
-                                end
-
-                                self:_SpawnDropdown(itemValue, choices, multi, dropdownCallback, choiceBoxPosition + Vector2.new(0, choiceH), choiceW)
-                            elseif ctxFrame then
-                                local dropdownCallback = function(_newValues)
-                                    sectionItem['value'] = {}
-                                    itemCallback(sectionItem['value'])
-                                end
-
-                                self:_SpawnDropdown({}, {'Clear'}, false, dropdownCallback, mousePos, 60)
-
-                            end
-                        else
-                            choiceOutline.Color = self._color_crust
-                        end
-
-                        sectionY = sectionY + choiceH + 18 + labelH
-                    elseif itemType == 'button' then
-                        local buttonOutline = itemDraws[1]
-                        local buttonFill = itemDraws[2]
-                        local buttonLabel = itemDraws[3]
-
-                        local buttonText = sectionItem['label']
-
-                        local buttonTextW, buttonTextH = self._GetTextBounds(buttonText)
-                        local buttonBoxSize = Vector2.new(buttonTextW + self._padding * 2, 20)
-                        buttonLabel.Position = itemPosition + Vector2.new(self._padding, 4)
-                        buttonLabel.Transparency = baseOpacity
-                        buttonLabel.Visible = childrenVisible
-                        buttonLabel.Color = self._color_text
-
-                        buttonOutline.Position = itemPosition
-                        buttonOutline.Size = buttonBoxSize
-                        buttonOutline.Transparency = baseOpacity
-                        buttonOutline.Visible = childrenVisible
-
-                        buttonFill.Position = itemPosition + Vector2.new(2, 2)
-                        buttonFill.Size = buttonBoxSize - Vector2.new(4, 4)
-                        buttonFill.Transparency = baseOpacity
-                        buttonFill.Visible = childrenVisible
-                        buttonFill.Color = self._color_crust
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(itemPosition, buttonBoxSize) then
-                            if clickFrame and itemCallback then
-                                itemCallback(sectionItem['value'])
-                            end
-
-                            buttonOutline.Color = self._color_accent
-                        else
-                            buttonOutline.Color = self._color_crust
-                        end
-
-                        sectionY = sectionY + 22 + buttonTextH
-                    elseif itemType == 'colorpicker' then
-                        local colorpickerOutline = itemDraws[1]
-                        local colorpickerFill = itemDraws[2]
-                        local colorpickerShadow = itemDraws[3]
-                        local colorpickerLabel = itemDraws[4]
-
-                        local boxSize = Vector2.new(30, 14)
-                        local boxPosition = itemPosition + Vector2.new(sectionW - boxSize.x - self._padding * 3, 0)
-                        colorpickerOutline.Position = boxPosition
-                        colorpickerOutline.Size = boxSize
-                        colorpickerOutline.Transparency = baseOpacity
-                        colorpickerOutline.Visible = childrenVisible
-                        colorpickerOutline.Color = self._color_crust
-
-                        colorpickerFill.Position = boxPosition + Vector2.new(1, 1)
-                        colorpickerFill.Size = boxSize - Vector2.new(2, 2)
-                        colorpickerFill.Transparency = baseOpacity
-                        colorpickerFill.Color = Color3.fromRGB(unpack(sectionItem['value']))
-                        colorpickerFill.Visible = childrenVisible
-
-                        colorpickerShadow.Position = boxPosition + Vector2.new(4, 4)
-                        colorpickerShadow.Size = boxSize - Vector2.new(8, 8)
-                        colorpickerShadow.Transparency = baseOpacity * 0.25
-                        colorpickerShadow.Visible = childrenVisible
-
-                        colorpickerLabel.Position = itemPosition
-                        colorpickerLabel.Transparency = baseOpacity
-                        colorpickerLabel.Visible = childrenVisible
-                        colorpickerLabel.Color = self._color_text
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(boxPosition, boxSize) then
-                            if clickFrame then
-                                local colorpickerCallback = function(newColor)
-                                    sectionItem['value'] = newColor
-
-                                    if itemCallback then
-                                        itemCallback( Color3.fromRGB(unpack(sectionItem['value'])) )
-                                    end
-                                end
-
-                                self:_SpawnColorpicker(sectionItem['value'], sectionItem['label'], colorpickerCallback)
-                            elseif ctxFrame then
-                                self:_SpawnDropdown({}, {'Copy', 'Paste'}, false, function (values)
-                                    local action = values[1]
-                                    if action == 'Copy' then
-                                        self._clipboard_color = itemValue
-                                    elseif action == 'Paste' then
-                                        sectionItem['value'] = self._clipboard_color or itemValue
-                                        if itemCallback then
-                                            itemCallback(Color3.fromRGB(unpack(sectionItem['value'])))
-                                        end
-                                    end
-                                end, mousePos, 60)
-                            end
-                        end
-
-                        sectionY = sectionY + boxSize.y + 10
-                    elseif itemType == 'key' then
-                        local keyLabel = itemDraws[1]
-                        local keyOutline = itemDraws[2]
-                        local keyFill = itemDraws[3]
-                        local keyText = itemDraws[4]
-
-                        local buttonText = sectionItem['_listening'] == true and '...' or itemValue:upper()
-                        local buttonTextW, buttonTextH = self._GetTextBounds(buttonText)
-                        local buttonBoxSize = Vector2.new(buttonTextW + self._padding * 2, 20)
-                        local buttonPosition = itemPosition + Vector2.new(sectionW - buttonBoxSize.x - self._padding * 3, 0)
-                        keyText.Position = buttonPosition + Vector2.new(self._padding, 4)
-                        keyText.Transparency = baseOpacity
-                        keyText.Text = buttonText
-                        keyText.Visible = childrenVisible
-                        keyText.Color = self._color_text
-
-                        keyOutline.Position = buttonPosition
-                        keyOutline.Size = buttonBoxSize
-                        keyOutline.Transparency = baseOpacity
-                        keyOutline.Visible = childrenVisible
-
-                        keyFill.Position = buttonPosition + Vector2.new(2, 2)
-                        keyFill.Size = buttonBoxSize - Vector2.new(4, 4)
-                        keyFill.Transparency = baseOpacity
-                        keyFill.Visible = childrenVisible
-                        keyFill.Color = self._color_crust
-
-                        keyLabel.Position = itemPosition + Vector2.new(0, buttonTextH / 2 + 1)
-                        keyLabel.Transparency = baseOpacity
-                        keyLabel.Visible = childrenVisible
-                        keyLabel.Color = self._color_text
-
-                        -- handle input
-                        if self._IsMouseWithinBounds(buttonPosition, buttonBoxSize) then
-                            if clickFrame then
-                                sectionItem['_listening'] = true
-                                self._inputs['m1']['click'] = false
-                            end
-
-                            keyOutline.Color = self._color_accent
-                        else
-                            keyOutline.Color = self._color_crust
-                        end
-
-                        if sectionItem['_listening'] then
-                            for keycode, inputData in pairs(self._inputs) do
-                                if inputData['click'] then
-                                    sectionItem['value'] = keycode
-                                    sectionItem['_listening'] = false
-                                    
-                                    break
-                                end
-                            end 
-                        end
-
-                        sectionY = sectionY + 22 + buttonTextH
-                    end
-                end
-
-                -- section core
-                local sectionBackdrop = sectionDraws[1]
-                local sectionCrust = sectionDraws[2]
-                local sectionBorder = sectionDraws[3]
-                local sectionTitle = sectionDraws[4]
-
-                sectionCrust.Position = sectionPos
-                sectionCrust.Size = Vector2.new(sectionW, sectionY)
-                sectionCrust.Transparency = baseOpacity
-                sectionCrust.Visible = childrenVisible
-                sectionCrust.Color = self._color_crust
-
-                sectionBorder.Position = sectionPos + Vector2.new(1, 1)
-                sectionBorder.Size = Vector2.new(sectionW - 2, sectionY - 2)
-                sectionBorder.Transparency = baseOpacity
-                sectionBorder.Visible = childrenVisible
-                sectionBorder.Color = self._color_overlay
-
-                local _sectionTitleW, sectionTitleH = self._GetTextBounds('')
-                sectionTitle.Position = sectionPos + Vector2.new(10, - sectionTitleH / 2)
-                sectionTitle.Transparency = baseOpacity
-                sectionTitle.Visible = childrenVisible
-                sectionTitle.Color = self._color_text
-
-                sectionBackdrop.Visible = false
-
-                sectionY = sectionY + self._padding
-                if opposite == 1 then
-                    totalSectionH_0 = totalSectionH_0 + sectionY
+    function window:UpdateVisibility()
+        for _, s in ipairs(self.Sections) do
+            local isVisible = (s.Tab == self.CurrentTab) and Arcane.IsOpen
+            s.Frame.Visible = isVisible
+            s.Title.Visible = isVisible
+            for _, item in ipairs(s.ContentDrawings) do 
+                if item.Type == "PickerPart" or item.Type == "DropdownPart" then
+                    item.Obj.Visible = false
                 else
-                    totalSectionH_1 = totalSectionH_1 + sectionY
-                end
-            else
-                -- tab is not active
-                undrawAll(sectionDraws)
-
-                -- and its items
-                for _, sectionItem in ipairs(sectionItems) do
-                    undrawAll(sectionItem['_drawings'])
+                    item.Obj.Visible = isVisible
                 end
             end
         end
+        OpenDropdown = nil
+        self:RelayoutTab(self.CurrentTab)
     end
 
-    -- finalize all input
-    self._tick = os.clock()
-end
+    function window:CreateSection(Name, TabName)
+        local section = { Frame = nil, Title = nil, Tab = TabName, Name = Name, ContentDrawings = {}, InternalY = 5, Width = 220 }
+        section.Frame = Draw("Square", { Filled = true, Color = theme.Section, Size = Vector2.new(220, 25), Corner = 8, Visible = (TabName == self.CurrentTab), ZIndex = 10 })
+        section.Title = Draw("Text", { Text = Name, Size = 14, Color = theme.TextDark, Font = 2, Visible = (TabName == self.CurrentTab), ZIndex = 11 })
 
-function UILib:Destroy()
-    -- remove core
-    for _, drawing in pairs(self._tree['_drawings']) do
-        drawing:Remove()
-    end
-
-    -- remove dropdown
-    self:_RemoveDropdown()
-    self:_RemoveColorpicker()
-
-    -- remove tree
-    for _, tab in pairs(self._tree['_tabs']) do
-        if tab['_drawings'] then
-            for _, drawing in pairs(tab['_drawings']) do
-                drawing:Remove()
-            end
+        function section:AddLabel(text)
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 18})
+            self.InternalY = self.InternalY + 18
+            window:RelayoutTab(self.Tab)
+            return label
         end
 
-        if tab._sections then
-            for _, section in pairs(tab['_sections']) do
-                for _, drawing in pairs(section['_drawings']) do
-                    drawing:Remove()
+        function section:AddToggle(text, default, callback)
+            local toggle = {Value = default or false, Callback = callback}
+            local boxFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(22, 22), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local check = Draw("Square", { Filled = true, Color = theme.Accent, Size = Vector2.new(12, 12), Corner = 2, Visible = false, ZIndex = 13 })
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 24})
+            Insert(self.ContentDrawings, {Obj = boxFrame, Type = "ToggleFrame", Height = 0})
+            Insert(self.ContentDrawings, {Obj = check, Type = "Ignore"})
+            
+            function toggle:SetValue(val)
+                self.Value = val
+                check.Visible = self.Value and section.Frame.Visible and Arcane.IsOpen
+                check.Position = boxFrame.Position + Vector2.new(5, 5)
+                self.Callback(self.Value)
+            end
+            function toggle:GetValue() return self.Value end
+
+            spawn(function()
+                local wasDown = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local over = isMouseOver(boxFrame.Position, boxFrame.Size)
+                        local down = ismouse1pressed()
+                        if not OpenDropdown and over and down and not wasDown then
+                            toggle:SetValue(not toggle.Value)
+                            wait(0.1)
+                        end
+                        wasDown = down
+                        check.Visible = toggle.Value and section.Frame.Visible and Arcane.IsOpen
+                        check.Position = boxFrame.Position + Vector2.new(5, 5)
+                    else
+                        check.Visible = false
+                    end
+                    wait()
+                end
+            end)
+            toggle:SetValue(toggle.Value)
+            section.InternalY = section.InternalY + 24; window:RelayoutTab(section.Tab)
+            return toggle
+        end
+
+        function section:AddTextBox(text, default, callback)
+            local box = {Value = default or "", Callback = callback}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local boxFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(section.Width - 20, 22), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local boxText = Draw("Text", { Text = box.Value, Size = 14, Color = theme.TextDark, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            local active = false
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 18})
+            Insert(self.ContentDrawings, {Obj = boxFrame, Type = "ButtonFrame", Height = 26})
+            Insert(self.ContentDrawings, {Obj = boxText, Type = "ButtonText", Center = true})
+            
+            function box:SetValue(val)
+                self.Value = val
+                boxText.Text = self.Value
+                self.Callback(self.Value)
+            end
+            function box:GetValue() return self.Value end
+
+            spawn(function()
+                local wasM1 = false
+                local wasPressed = {}
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local m1 = ismouse1pressed()
+                        if not OpenDropdown and m1 and not wasM1 then
+                            active = isMouseOver(boxFrame.Position, boxFrame.Size)
+                            boxFrame.Color = active and theme.Section or theme.Button
+                            boxText.Color = active and theme.Text or theme.TextDark
+                        end
+                        wasM1 = m1
+                        if active then
+                            for name, kc in pairs(KeyCodeNames) do
+                                local down = iskeypressed(kc)
+                                if down and not wasPressed[kc] then
+                                    if kc == 0x08 then 
+                                        box.Value = box.Value:sub(1, #box.Value - 1)
+                                    elseif kc == 0x0D then
+                                        active = false
+                                        boxFrame.Color = theme.Button
+                                        boxText.Color = theme.TextDark
+                                        box.Callback(box.Value)
+                                    elseif #name == 1 or name == "Space" then
+                                        local char = (name == "Space" and " " or name)
+                                        if iskeypressed(0x10) then char = char:upper() else char = char:lower() end
+                                        box.Value = box.Value .. char
+                                    end
+                                    boxText.Text = box.Value
+                                end
+                                wasPressed[kc] = down
+                            end
+                        end
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 44; window:RelayoutTab(section.Tab)
+            return box
+        end
+
+        function section:AddButton(text, callback)
+            local btnFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(self.Width - 20, 22), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local btnText = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            Insert(self.ContentDrawings, {Obj = btnFrame, Type = "ButtonFrame", Height = 26}); Insert(self.ContentDrawings, {Obj = btnText, Type = "ButtonText", Center = true})
+            spawn(function()
+                local wasDown = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local over = isMouseOver(btnFrame.Position, btnFrame.Size)
+                        local down = ismouse1pressed()
+                        if not OpenDropdown and over then
+                            btnFrame.Color = lerpColor(theme.Button, theme.Accent, 0.2)
+                            if down and not wasDown then callback(); btnFrame.Color = theme.Accent; wait(0.1) end
+                        else btnFrame.Color = theme.Button end
+                        wasDown = down
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 26; window:RelayoutTab(section.Tab)
+            return {Frame = btnFrame, Text = btnText}
+        end
+
+        function section:AddSlider(text, options)
+            local slider = {Value = options.Default or 0, Min = options.Min or 0, Max = options.Max or 100, Callback = options.Callback}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local backFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(section.Width - 20, 16), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local fillFrame = Draw("Square", { Filled = true, Color = theme.Accent, Size = Vector2.new(0, 16), Corner = 4, Visible = self.Frame.Visible, ZIndex = 13 })
+            local valueText = Draw("Text", { Text = tostring(slider.Value), Size = 14, Color = theme.Text, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 14 })
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 18}); Insert(self.ContentDrawings, {Obj = backFrame, Type = "SliderFrame", Height = 20}); Insert(self.ContentDrawings, {Obj = fillFrame, Type = "Ignore"}); Insert(self.ContentDrawings, {Obj = valueText, Type = "Ignore"})
+            
+            function slider:SetValue(val)
+                self.Value = math.clamp(val, self.Min, self.Max)
+                local percent = (self.Value - self.Min) / (self.Max - self.Min)
+                fillFrame.Size = Vector2.new(backFrame.Size.X * percent, backFrame.Size.Y)
+                valueText.Text = tostring(self.Value)
+                self.Callback(self.Value)
+            end
+            function slider:GetValue() return self.Value end
+
+            spawn(function()
+                local dragging = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local down = ismouse1pressed()
+                        if not OpenDropdown and isMouseOver(backFrame.Position, backFrame.Size) and down then dragging = true end
+                        if not down then dragging = false end
+                        if dragging then
+                            local percent = math.clamp((getMousePos().X - backFrame.Position.X) / backFrame.Size.X, 0, 1)
+                            slider:SetValue(math.floor(slider.Min + (slider.Max - slider.Min) * percent))
+                        end
+                        fillFrame.Position = backFrame.Position
+                        fillFrame.Visible = section.Frame.Visible and Arcane.IsOpen
+                        valueText.Position = backFrame.Position + Vector2.new(backFrame.Size.X/2, (backFrame.Size.Y/2))
+                        valueText.Visible = section.Frame.Visible and Arcane.IsOpen
+                    else
+                        fillFrame.Visible = false
+                        valueText.Visible = false
+                    end
+                    wait()
+                end
+            end)
+            slider:SetValue(slider.Value)
+            section.InternalY = section.InternalY + 38; window:RelayoutTab(section.Tab)
+            return slider
+        end
+
+        function section:AddDualSlider(text, options)
+            local slider = {Low = options.DefaultLow or options.Min or 0, High = options.DefaultHigh or options.Max or 100, Min = options.Min or 0, Max = options.Max or 100, Callback = options.Callback}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local backFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(section.Width - 20, 16), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local fillFrame = Draw("Square", { Filled = true, Color = theme.Accent, Size = Vector2.new(0, 16), Corner = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            local valueText = Draw("Text", { Text = tostring(slider.Low) .. " - " .. tostring(slider.High), Size = 13, Color = theme.Text, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 14 })
+            
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 18})
+            Insert(self.ContentDrawings, {Obj = backFrame, Type = "SliderFrame", Height = 20})
+            Insert(self.ContentDrawings, {Obj = fillFrame, Type = "Ignore"})
+            Insert(self.ContentDrawings, {Obj = valueText, Type = "Ignore"})
+
+            function slider:SetValues(low, high)
+                self.Low = math.clamp(math.min(low, high), self.Min, self.Max)
+                self.High = math.clamp(math.max(low, high), self.Min, self.Max)
+                local lowPct = (self.Low - self.Min) / (self.Max - self.Min)
+                local highPct = (self.High - self.Min) / (self.Max - self.Min)
+                fillFrame.Position = backFrame.Position + Vector2.new(backFrame.Size.X * lowPct, 0)
+                fillFrame.Size = Vector2.new(backFrame.Size.X * (highPct - lowPct), backFrame.Size.Y)
+                valueText.Text = tostring(math.floor(self.Low)) .. " - " .. tostring(math.floor(self.High))
+                self.Callback(self.Low, self.High)
+            end
+
+            spawn(function()
+                local draggingLow, draggingHigh = false, false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local down = ismouse1pressed()
+                        local mPos = getMousePos()
+                        if not OpenDropdown and down and isMouseOver(backFrame.Position, backFrame.Size) and not draggingLow and not draggingHigh then
+                            local pct = math.clamp((mPos.X - backFrame.Position.X) / backFrame.Size.X, 0, 1)
+                            local val = slider.Min + (slider.Max - slider.Min) * pct
+                            if math.abs(val - slider.Low) < math.abs(val - slider.High) then draggingLow = true else draggingHigh = true end
+                        end
+                        if not down then draggingLow, draggingHigh = false, false end
+                        if draggingLow then
+                            local pct = math.clamp((mPos.X - backFrame.Position.X) / backFrame.Size.X, 0, 1)
+                            slider:SetValues(slider.Min + (slider.Max - slider.Min) * pct, slider.High)
+                        elseif draggingHigh then
+                            local pct = math.clamp((mPos.X - backFrame.Position.X) / backFrame.Size.X, 0, 1)
+                            slider:SetValues(slider.Low, slider.Min + (slider.Max - slider.Min) * pct)
+                        end
+                        
+                        local lowPct = (slider.Low - slider.Min) / (slider.Max - slider.Min)
+                        local highPct = (slider.High - slider.Min) / (slider.Max - slider.Min)
+                        fillFrame.Position = backFrame.Position + Vector2.new(backFrame.Size.X * lowPct, 0)
+                        fillFrame.Size = Vector2.new(backFrame.Size.X * (highPct - lowPct), backFrame.Size.Y)
+                        fillFrame.Visible = section.Frame.Visible and Arcane.IsOpen
+                        valueText.Position = backFrame.Position + Vector2.new(backFrame.Size.X/2, (backFrame.Size.Y/2))
+                        valueText.Visible = section.Frame.Visible and Arcane.IsOpen
+                    else fillFrame.Visible, valueText.Visible = false, false end
+                    wait()
+                end
+            end)
+            slider:SetValues(slider.Low, slider.High)
+            section.InternalY = section.InternalY + 38; window:RelayoutTab(section.Tab)
+            return slider
+        end
+
+        function section:AddKeybind(text, defaultKeyName, callback, isMenuKey)
+            local kb = {Key = KeyCodeNames[defaultKeyName] or 0x2D, Mode = "Hold", Binding = false, Active = false, MenuOpen = false, Callback = callback}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local btnFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(60, 18), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local btnText = Draw("Text", { Text = "[" .. GetKeyName(kb.Key) .. "]", Size = 13, Color = theme.Text, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            local dropFrame = Draw("Square", { Filled = true, Color = theme.Section, Size = Vector2.new(60, 54), Corner = 4, Visible = false, ZIndex = 20 })
+            local optHold = Draw("Text", { Text = "Hold", Size = 12, Color = theme.Accent, Center = true, Font = 2, Visible = false, ZIndex = 21 })
+            local optToggle = Draw("Text", { Text = "Toggle", Size = 12, Color = theme.Text, Center = true, Font = 2, Visible = false, ZIndex = 21 })
+            local optAlways = Draw("Text", { Text = "Always", Size = 12, Color = theme.Text, Center = true, Font = 2, Visible = false, ZIndex = 21 })
+            
+            Insert(self.ContentDrawings, {Obj = label, Type = "Label", Height = 22})
+            Insert(self.ContentDrawings, {Obj = btnFrame, Type = "KeybindFrame", Height = 0})
+            Insert(self.ContentDrawings, {Obj = btnText, Type = "KeybindText", Center = true})
+            Insert(self.ContentDrawings, {Obj = dropFrame, Type = "Ignore"})
+            Insert(self.ContentDrawings, {Obj = optHold, Type = "Ignore"})
+            Insert(self.ContentDrawings, {Obj = optToggle, Type = "Ignore"})
+            Insert(self.ContentDrawings, {Obj = optAlways, Type = "Ignore"})
+
+            function kb:SetValue(k) self.Key = k; btnText.Text = "[" .. GetKeyName(self.Key) .. "]" end
+            function kb:GetValue() return self.Key end
+
+            local function updateActive()
+                if isMenuKey then return end
+                local isA = (kb.Mode == "Always") or kb.Active
+                ActiveKeybinds[text] = isA and kb.Mode or nil
+                kb.Callback(isA)
+            end
+            spawn(function()
+                local wasPressed = {}
+                while true do
+                    for name, kc in pairs(KeyCodeNames) do
+                        local down = iskeypressed(kc)
+                        if down and not wasPressed[kc] then
+                            if kb.Binding then
+                                if kc ~= 0x01 then
+                                    kb:SetValue(kc); kb.Binding = false; btnFrame.Color = theme.Button
+                                end
+                            elseif kc == kb.Key then
+                                if isMenuKey then kb.Callback() else
+                                    if kb.Mode == "Hold" then kb.Active = true; updateActive() elseif kb.Mode == "Toggle" then kb.Active = not kb.Active; updateActive() end
+                                end
+                            end
+                        elseif not down and wasPressed[kc] then
+                            if not isMenuKey and kc == kb.Key and kb.Mode == "Hold" then kb.Active = false; updateActive() end
+                        end
+                        wasPressed[kc] = down
+                    end
+                    wait()
+                end
+            end)
+            spawn(function()
+                local wasM1, wasM2 = false, false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local m1, m2 = ismouse1pressed(), ismouse2pressed()
+                        local overBtn = isMouseOver(btnFrame.Position, btnFrame.Size)
+                        if not OpenDropdown and overBtn and m1 and not wasM1 then kb.Binding = true; btnText.Text = "[ ... ]"; btnFrame.Color = theme.Accent end
+                        if not OpenDropdown and not isMenuKey and overBtn and m2 and not wasM2 then kb.MenuOpen = not kb.MenuOpen end
+                        if kb.MenuOpen then
+                            dropFrame.Position = btnFrame.Position + Vector2.new(0, 20); dropFrame.Visible, optHold.Visible, optToggle.Visible, optAlways.Visible = true, true, true, true
+                            optHold.Position = dropFrame.Position + Vector2.new(30, 5); optToggle.Position = dropFrame.Position + Vector2.new(30, 21); optAlways.Position = dropFrame.Position + Vector2.new(30, 37)
+                            if m1 and not wasM1 then
+                                if isMouseOver(optHold.Position - Vector2.new(30,5), Vector2.new(60,16)) then kb.Mode = "Hold"; kb.MenuOpen = false elseif isMouseOver(optToggle.Position - Vector2.new(30,5), Vector2.new(60,16)) then kb.Mode = "Toggle"; kb.MenuOpen = false elseif isMouseOver(optAlways.Position - Vector2.new(30,5), Vector2.new(60,16)) then kb.Mode = "Always"; kb.MenuOpen = false end
+                                optHold.Color = kb.Mode == "Hold" and theme.Accent or theme.Text; optToggle.Color = kb.Mode == "Toggle" and theme.Accent or theme.Text; optAlways.Color = kb.Mode == "Always" and theme.Accent or theme.Text; updateActive()
+                            end
+                        else dropFrame.Visible, optHold.Visible, optToggle.Visible, optAlways.Visible = false, false, false, false end
+                        wasM1, wasM2 = m1, m2
+                    else
+                        kb.MenuOpen = false
+                        dropFrame.Visible = false
+                        optHold.Visible = false
+                        optToggle.Visible = false
+                        optAlways.Visible = false
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 22; window:RelayoutTab(section.Tab)
+            return kb
+        end
+
+        function section:AddColorPicker(text, default, callback)
+            local cp = {Value = default or Color3.new(1,0,0), Callback = callback, H = 0, S = 1, V = 1, Open = false}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local preview = Draw("Square", { Filled = true, Color = cp.Value, Size = Vector2.new(24, 12), Corner = 3, Visible = self.Frame.Visible, ZIndex = 12 })
+            
+            local pickerFrame = Draw("Square", { Filled = true, Color = theme.Section, Size = Vector2.new(135, 115), Corner = 6, Visible = false, ZIndex = 60 })
+            local pickerOutline = Draw("Square", { Filled = false, Color = theme.Outline, Size = Vector2.new(135, 115), Corner = 6, Visible = false, ZIndex = 61, Thickness = 1 })
+            
+            local gridParts = {}
+            local hueParts = {}
+            
+            for x = 0, 9 do
+                for y = 0, 8 do
+                    local p = Draw("Square", { Filled = true, Size = Vector2.new(10, 10), Visible = false, ZIndex = 62 })
+                    table.insert(gridParts, {Obj = p, sat = x/9, val = 1-(y/8)})
+                    table.insert(section.ContentDrawings, {Obj = p, Type = "PickerPart"})
+                end
+            end
+
+            for y = 0, 8 do
+                local p = Draw("Square", { Filled = true, Size = Vector2.new(12, 10), Visible = false, ZIndex = 62 })
+                table.insert(hueParts, {Obj = p, hue = y/8})
+                table.insert(section.ContentDrawings, {Obj = p, Type = "PickerPart"})
+            end
+
+            table.insert(section.ContentDrawings, {Obj = label, Type = "Label", Height = 22})
+            table.insert(section.ContentDrawings, {Obj = preview, Type = "ToggleFrame", Height = 0})
+            table.insert(section.ContentDrawings, {Obj = pickerFrame, Type = "PickerPart"})
+            table.insert(section.ContentDrawings, {Obj = pickerOutline, Type = "PickerPart"})
+
+            function cp:SetValue(col)
+                self.Value = col
+                preview.Color = col
+                self.Callback(col)
+            end
+            function cp:GetValue() return self.Value end
+
+            spawn(function()
+                local wasM1 = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local m1, mp = ismouse1pressed(), getMousePos()
+                        if not OpenDropdown and isMouseOver(preview.Position, preview.Size) and m1 and not wasM1 then cp.Open = not cp.Open end
+                        
+                        pickerFrame.Visible = cp.Open
+                        pickerOutline.Visible = cp.Open
+                        pickerFrame.Position = preview.Position + Vector2.new(30, 0)
+                        pickerOutline.Position = pickerFrame.Position
+                        
+                        for i, p in ipairs(gridParts) do
+                            p.Obj.Visible = cp.Open
+                            p.Obj.Position = pickerFrame.Position + Vector2.new(10 + (math.floor((i-1)/9) * 10), 10 + (((i-1)%9) * 10))
+                            p.Obj.Color = Color3.fromHSV(cp.H, p.sat, p.val)
+                            if cp.Open and m1 and isMouseOver(p.Obj.Position, p.Obj.Size) then 
+                                cp.S, cp.V = p.sat, p.val 
+                                cp:SetValue(Color3.fromHSV(cp.H, cp.S, cp.V))
+                            end
+                        end
+
+                        for i, p in ipairs(hueParts) do
+                            p.Obj.Visible = cp.Open
+                            p.Obj.Position = pickerFrame.Position + Vector2.new(112, 10 + ((i-1) * 10))
+                            p.Obj.Color = Color3.fromHSV(p.hue, 1, 1)
+                            if cp.Open and m1 and isMouseOver(p.Obj.Position, p.Obj.Size) then 
+                                cp.H = p.hue 
+                                cp:SetValue(Color3.fromHSV(cp.H, cp.S, cp.V))
+                            end
+                        end
+                        wasM1 = m1
+                    else
+                        cp.Open = false
+                        pickerFrame.Visible = false
+                        pickerOutline.Visible = false
+                        for _, p in ipairs(gridParts) do p.Obj.Visible = false end
+                        for _, p in ipairs(hueParts) do p.Obj.Visible = false end
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 22; window:RelayoutTab(section.Tab)
+            return cp
+        end
+
+        function section:AddDropdown(text, list, default, callback)
+            local dp = {Value = default or list[1], List = list, Callback = callback, Open = false}
+            local self_id = {}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local dropFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(section.Width - 20, 22), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local dropText = Draw("Text", { Text = dp.Value, Size = 14, Color = theme.TextDark, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            local container = Draw("Square", { Filled = true, Color = theme.Section, Size = Vector2.new(section.Width - 20, #list * 20 + 10), Corner = 4, Visible = false, ZIndex = 50 })
+            local items = {}
+
+            local function clearItems()
+                for _, it in ipairs(items) do it.Obj:Remove() end
+                items = {}
+            end
+
+            local function createItems()
+                clearItems()
+                for i, val in ipairs(dp.List) do
+                    local itemText = Draw("Text", { Text = val, Size = 13, Color = (val == dp.Value and theme.Accent or theme.Text), Center = true, Font = 2, Visible = false, ZIndex = 51 })
+                    table.insert(items, {Obj = itemText, Value = val})
+                    table.insert(section.ContentDrawings, {Obj = itemText, Type = "DropdownPart"})
+                end
+                container.Size = Vector2.new(section.Width - 20, #dp.List * 20 + 10)
+            end
+
+            function dp:SetValue(val)
+                self.Value = val
+                dropText.Text = self.Value
+                for _, it in ipairs(items) do it.Obj.Color = (it.Value == self.Value and theme.Accent or theme.Text) end
+                self.Callback(self.Value)
+            end
+            function dp:GetValue() return self.Value end
+            function dp:Refresh(newList) self.List = newList; createItems() end
+
+            createItems()
+            table.insert(section.ContentDrawings, {Obj = label, Type = "Label", Height = 18})
+            table.insert(section.ContentDrawings, {Obj = dropFrame, Type = "ButtonFrame", Height = 26})
+            table.insert(section.ContentDrawings, {Obj = dropText, Type = "ButtonText", Center = true})
+            table.insert(section.ContentDrawings, {Obj = container, Type = "DropdownPart"})
+
+            spawn(function()
+                local wasM1 = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local m1 = ismouse1pressed()
+                        local over = isMouseOver(dropFrame.Position, dropFrame.Size)
+                        
+                        if m1 and not wasM1 then
+                            if over then
+                                if OpenDropdown == self_id then 
+                                    dp.Open = false
+                                    OpenDropdown = nil
+                                elseif OpenDropdown == nil then
+                                    dp.Open = true
+                                    OpenDropdown = self_id
+                                end
+                            elseif dp.Open and not isMouseOver(container.Position, container.Size) then
+                                dp.Open = false
+                                if OpenDropdown == self_id then OpenDropdown = nil end
+                            end
+                        end
+                        
+                        container.Visible = dp.Open
+                        container.Position = dropFrame.Position + Vector2.new(0, 25)
+                        
+                        for i, item in ipairs(items) do
+                            item.Obj.Visible = dp.Open
+                            item.Obj.Position = container.Position + Vector2.new(container.Size.X/2, 10 + (i-1)*20)
+                            if dp.Open and m1 and not wasM1 and isMouseOver(item.Obj.Position - Vector2.new(container.Size.X/2, 8), Vector2.new(container.Size.X, 18)) then
+                                dp:SetValue(item.Value)
+                                dp.Open = false
+                                OpenDropdown = nil
+                            end
+                        end
+                        wasM1 = m1
+                    else 
+                        dp.Open = false
+                        if OpenDropdown == self_id then OpenDropdown = nil end
+                        container.Visible = false 
+                        for _, it in ipairs(items) do it.Obj.Visible = false end 
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 44; window:RelayoutTab(section.Tab)
+            return dp
+        end
+
+        function section:AddMultipleDropdown(text, list, default, callback)
+            local mdp = {Value = default or {}, List = list, Callback = callback, Open = false}
+            local self_id = {}
+            local label = Draw("Text", { Text = text, Size = 14, Color = theme.Text, Font = 2, Visible = self.Frame.Visible, ZIndex = 12 })
+            local dropFrame = Draw("Square", { Filled = true, Color = theme.Button, Size = Vector2.new(section.Width - 20, 22), Corner = 4, Visible = self.Frame.Visible, ZIndex = 12 })
+            local dropText = Draw("Text", { Text = "...", Size = 14, Color = theme.TextDark, Center = true, Font = 2, Visible = self.Frame.Visible, ZIndex = 13 })
+            local container = Draw("Square", { Filled = true, Color = theme.Section, Size = Vector2.new(section.Width - 20, #list * 20 + 10), Corner = 4, Visible = false, ZIndex = 50 })
+            local items = {}
+
+            local function updateText()
+                local str = ""
+                for i, v in ipairs(mdp.Value) do str = str .. v .. (i == #mdp.Value and "" or ", ") end
+                if str == "" then str = "None" end
+                if #str > 20 then str = str:sub(1, 17) .. "..." end
+                dropText.Text = str
+            end
+
+            local function createItems()
+                for _, it in ipairs(items) do it.Obj:Remove() end
+                items = {}
+                for i, val in ipairs(mdp.List) do
+                    local isS = false
+                    for _, s in pairs(mdp.Value) do if s == val then isS = true break end end
+                    local itemText = Draw("Text", { Text = val, Size = 13, Color = (isS and theme.Accent or theme.Text), Center = true, Font = 2, Visible = false, ZIndex = 51 })
+                    table.insert(items, {Obj = itemText, Value = val})
+                    table.insert(section.ContentDrawings, {Obj = itemText, Type = "DropdownPart"})
+                end
+                container.Size = Vector2.new(section.Width - 20, #mdp.List * 20 + 10)
+            end
+
+            function mdp:SetValue(val)
+                self.Value = val
+                for _, it in ipairs(items) do
+                    local s = false
+                    for _, v in pairs(self.Value) do if v == it.Value then s = true break end end
+                    it.Obj.Color = s and theme.Accent or theme.Text
+                end
+                updateText()
+                self.Callback(self.Value)
+            end
+            function mdp:GetValue() return self.Value end
+            function mdp:Refresh(newList) self.List = newList; createItems() end
+
+            createItems(); updateText()
+            table.insert(section.ContentDrawings, {Obj = label, Type = "Label", Height = 18})
+            table.insert(section.ContentDrawings, {Obj = dropFrame, Type = "ButtonFrame", Height = 26})
+            table.insert(section.ContentDrawings, {Obj = dropText, Type = "ButtonText", Center = true})
+            table.insert(section.ContentDrawings, {Obj = container, Type = "DropdownPart"})
+
+            spawn(function()
+                local wasM1 = false
+                while true do
+                    if section.Frame.Visible and window.CurrentTab == section.Tab and Arcane.IsOpen then
+                        local m1 = ismouse1pressed()
+                        local over = isMouseOver(dropFrame.Position, dropFrame.Size)
+                        
+                        if m1 and not wasM1 then
+                            if over then
+                                if OpenDropdown == self_id then 
+                                    mdp.Open = false
+                                    OpenDropdown = nil
+                                elseif OpenDropdown == nil then
+                                    mdp.Open = true
+                                    OpenDropdown = self_id
+                                end
+                            elseif mdp.Open and not isMouseOver(container.Position, container.Size) then
+                                mdp.Open = false
+                                if OpenDropdown == self_id then OpenDropdown = nil end
+                            end
+                        end
+                        
+                        container.Visible = mdp.Open
+                        container.Position = dropFrame.Position + Vector2.new(0, 25)
+                        
+                        for i, item in ipairs(items) do
+                            item.Obj.Visible = mdp.Open
+                            item.Obj.Position = container.Position + Vector2.new(container.Size.X/2, 10 + (i-1)*20)
+                            if mdp.Open and m1 and not wasM1 and isMouseOver(item.Obj.Position - Vector2.new(container.Size.X/2, 8), Vector2.new(container.Size.X, 18)) then
+                                local found = false
+                                for idx, v in ipairs(mdp.Value) do
+                                    if v == item.Value then
+                                        table.remove(mdp.Value, idx)
+                                        found = true
+                                        break
+                                    end
+                                end
+                                if not found then table.insert(mdp.Value, item.Value) end
+                                item.Obj.Color = (not found and theme.Accent or theme.Text)
+                                updateText()
+                                mdp.Callback(mdp.Value)
+                            end
+                        end
+                        wasM1 = m1
+                    else 
+                        mdp.Open = false
+                        if OpenDropdown == self_id then OpenDropdown = nil end
+                        container.Visible = false 
+                        for _, it in ipairs(items) do it.Obj.Visible = false end 
+                    end
+                    wait()
+                end
+            end)
+            section.InternalY = section.InternalY + 44; window:RelayoutTab(section.Tab)
+            return mdp
+        end
+
+        Insert(self.Sections, section) return section
+    end
+
+    function window:RelayoutTab(TabName)
+        local startX, startY, padding = 170, 30, 15
+        local curX, curY, maxH = startX, startY, 0
+
+        for _, s in ipairs(self.Sections) do
+            if s.Tab == TabName then
+                if curX + s.Width > self.Size.X - 20 then 
+                    curX = startX
+                    curY = curY + maxH + 30
+                    maxH = 0
                 end
                 
-                if section._items then
-                    for _, item in pairs(section._items) do
-                        for _, drawing in pairs(item['_drawings']) do
-                            drawing:Remove()
+                s.Frame.Position = self.Pos + Vector2.new(curX, curY)
+                s.Title.Position = s.Frame.Position + Vector2.new(5, -18)
+                
+                local lY = 5
+                local lastLabelPos = nil
+                local lastSquarePos = nil
+                local lastSquareSize = nil
+
+                for _, item in ipairs(s.ContentDrawings) do
+                    local d = item.Obj
+                    if item.Type == "ButtonFrame" or item.Type == "SliderFrame" then
+                        d.Position = s.Frame.Position + Vector2.new(10, lY)
+                        lastSquarePos = d.Position
+                        lastSquareSize = d.Size
+                        lY = lY + (item.Height or 26)
+                    elseif item.Type == "Label" then
+                        d.Position = s.Frame.Position + Vector2.new(10, lY)
+                        lastLabelPos = d.Position
+                        lY = lY + (item.Height or 18)
+                    elseif item.Type == "ToggleFrame" then
+                        if lastLabelPos then
+                            d.Position = Vector2.new(s.Frame.Position.X + s.Width - d.Size.X - 10, lastLabelPos.Y)
+                        end
+                    elseif item.Type == "ButtonText" or item.Type == "KeybindText" then
+                        if item.Center and lastSquarePos then
+                            d.Position = Vector2.new(lastSquarePos.X + (lastSquareSize.X / 2), lastSquarePos.Y + (lastSquareSize.Y / 2))
+                        end
+                    elseif item.Type == "KeybindFrame" then
+                        if lastLabelPos then
+                            d.Position = Vector2.new(s.Frame.Position.X + s.Width - d.Size.X - 10, lastLabelPos.Y)
+                            lastSquarePos = d.Position
+                            lastSquareSize = d.Size
                         end
                     end
                 end
+                
+                s.Frame.Size = Vector2.new(s.Width, lY + 5)
+                if s.Frame.Size.Y > maxH then maxH = s.Frame.Size.Y end
+                curX = curX + s.Width + padding
             end
         end
     end
 
-    self._tree = nil
-    setrobloxinput(true)
+    spawn(function()
+        local wasD, drag, dsm, dsp, dragK, dsmK, dspK = false, false, nil, nil, false, nil, nil
+        while true do
+            local d, mp = ismouse1pressed() , getMousePos()
+            if Arcane.IsOpen then
+                if d and not wasD and isMouseOver(window.Pos, Vector2.new(window.Size.X, 50)) then drag = true; dsm = mp; dsp = window.Pos end
+                if not d then drag = false end
+                if drag then window:Move((dsp + (mp - dsm)) - window.Pos) end
+                
+                if d and not wasD and isMouseOver(KeybindList.MainFrame.Position, Vector2.new(KeybindList.MainFrame.Size.X, 25)) then dragK = true; dsmK = mp; dspK = KeybindList.MainFrame.Position end
+                if not d then dragK = false end
+                if dragK then 
+                    local delta = (dspK + (mp - dsmK)) - KeybindList.MainFrame.Position
+                    KeybindList.MainFrame.Position = KeybindList.MainFrame.Position + delta; KeybindList.Title.Position = KeybindList.Title.Position + delta
+                end
+                
+                for _, tab in tabs do
+                    if isMouseOver(tab.Position, tab.Size) then
+                        if window.CurrentTab ~= tab.Name then tab.Text.Color = Color3.fromRGB(200, 200, 200) end
+                        if d and not wasD then 
+                            for _, t in ipairs(tabs) do t.Text.Color = theme.TextDark end
+                            tab.Text.Color = theme.Text; window.CurrentTab = tab.Name; window.TargetSelectorY = tab.RelativeY; window:UpdateVisibility() 
+                        end
+                    elseif window.CurrentTab ~= tab.Name then tab.Text.Color = theme.TextDark end
+                end
+            end
+            window.CurrentSelectorY = lerp(window.CurrentSelectorY, window.TargetSelectorY, 0.15); window.GlobalSelector.Position = Vector2.new(window.Pos.X, window.Pos.Y + window.CurrentSelectorY)
+            wasD = d; wait(0.01)
+        end
+    end)
 
+    function window:Finalize()
+        self:CreateTabSection("System"); self:CreateTab("Settings")
+        local s = self:CreateSection("Menu", "Settings")
+        s:AddLabel("v1.0.0"); s:AddKeybind("Menu Keybind", "F1", function() window:SetVisible(not Arcane.IsOpen) end, true)
+        s:AddButton("Unload UI", function() for _, v in ipairs(drawings) do v:Remove() end end)
+        self:UpdateVisibility()
+    end
+    return window
 end
-
-return UILib
-
